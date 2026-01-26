@@ -1,16 +1,28 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Login() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (session?.user) {
+      if (session.user.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
+    }
+  }, [session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,13 +37,14 @@ export default function Login() {
 
       if (result?.error) {
         alert('Email ou mot de passe incorrect')
+        setLoading(false)
       } else {
-        router.push('/dashboard')
+        // Recharger la page pour que useEffect récupère la nouvelle session
+        window.location.reload()
       }
     } catch (error) {
       console.error('Login error:', error)
       alert('Erreur lors de la connexion')
-    } finally {
       setLoading(false)
     }
   }
