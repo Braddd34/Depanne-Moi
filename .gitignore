@@ -36,3 +36,8 @@ yarn-error.log*
 
 # OS
 Thumbs.db
+
+# Scripts avec tokens
+configure-git-token.sh
+*secret*
+*token*.sh
