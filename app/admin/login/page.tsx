@@ -4,7 +4,7 @@ import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
-export default function UserLogin() {
+export default function AdminLogin() {
   const router = useRouter()
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
@@ -13,12 +13,13 @@ export default function UserLogin() {
     password: '',
   })
 
-  // Rediriger si déjà connecté (utilisateurs uniquement)
+  // Rediriger si déjà connecté
   useEffect(() => {
     if (session?.user) {
       if (session.user.role === 'ADMIN') {
         router.push('/admin')
       } else {
+        // Non-admin ne peuvent pas accéder à la connexion admin
         router.push('/dashboard')
       }
     }
@@ -39,9 +40,17 @@ export default function UserLogin() {
         alert('Email ou mot de passe incorrect')
         setLoading(false)
       } else {
-        // Rediriger vers le dashboard utilisateur
-        router.push('/dashboard')
-        router.refresh()
+        // Vérifier si c'est bien un admin
+        const response = await fetch('/api/auth/session')
+        const sessionData = await response.json()
+        
+        if (sessionData?.user?.role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          alert('Accès réservé aux administrateurs uniquement')
+          await fetch('/api/auth/signout', { method: 'POST' })
+          setLoading(false)
+        }
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -51,28 +60,31 @@ export default function UserLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Depanne Moi</h1>
-          <p className="text-gray-600">Connexion utilisateur</p>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600 rounded-full mb-4">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-white">Administration</h1>
+          <p className="text-gray-400 mt-2">Accès réservé aux administrateurs</p>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-xl">
-          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Se connecter</h2>
-
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                Email administrateur
               </label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="votre@email.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="admin@example.com"
               />
             </div>
 
@@ -85,7 +97,7 @@ export default function UserLogin() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
@@ -93,18 +105,20 @@ export default function UserLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Pas encore de compte ?{' '}
-            <a href="/auth/register" className="text-blue-600 hover:underline font-medium">
-              S'inscrire gratuitement
-            </a>
-          </p>
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-500">
+              <svg className="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              Connexion sécurisée SSL
+            </p>
+          </div>
         </div>
       </div>
     </div>
