@@ -16,6 +16,7 @@ model User {
   company   String?
   phone     String
   vehicleType String? // "camion", "remorque", etc.
+  role      UserRole @default(USER)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,4 +75,9 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
