@@ -1,0 +1,77 @@
+// Neon PostgreSQL
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?  // null si magic link
+  name      String
+  company   String?
+  phone     String
+  vehicleType String? // "camion", "remorque", etc.
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  trips     Trip[]
+  bookings  Booking[]
+  
+  @@map("users")
+}
+
+model Trip {
+  id          String   @id @default(cuid())
+  driverId    String
+  driver      User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  
+  fromCity    String
+  toCity      String
+  date        DateTime
+  vehicleType String   // Type de véhicule transportable
+  price       Float?   // Prix indicatif (optionnel)
+  
+  status      TripStatus @default(AVAILABLE)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  bookings   Booking[]
+  
+  @@map("trips")
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  bookerId  String
+  booker    User     @relation(fields: [bookerId], references: [id], onDelete: Cascade)
+  
+  status    BookingStatus @default(PENDING)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("bookings")
+}
+
+enum TripStatus {
+  AVAILABLE
+  RESERVED
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
