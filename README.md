@@ -68,3 +68,7 @@ npm run db:studio
 ## 🚢 Déploiement
 
 Ce projet est configuré pour Vercel. Connectez votre repo GitHub à Vercel et configurez les variables d'environnement.
+
+## 🔧 Correction TypeScript
+
+Les types NextAuth ont été étendus dans `types/next-auth.d.ts` pour supporter `session.user.id`.
