@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, TripStatus } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -124,7 +124,7 @@ async function main() {
       date: tomorrow,
       vehicleType: 'Camion',
       price: 250,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[0].id,
@@ -133,7 +133,7 @@ async function main() {
       date: in3Days,
       vehicleType: 'Semi-remorque',
       price: 400,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[0].id,
@@ -142,7 +142,7 @@ async function main() {
       date: in5Days,
       vehicleType: 'Fourgon',
       price: 180,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     
     // Trajets de Marie Martin
@@ -153,7 +153,7 @@ async function main() {
       date: tomorrow,
       vehicleType: 'Camion',
       price: 300,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[1].id,
@@ -162,7 +162,7 @@ async function main() {
       date: in3Days,
       vehicleType: 'Utilitaire',
       price: 150,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[1].id,
@@ -171,7 +171,7 @@ async function main() {
       date: in5Days,
       vehicleType: 'Fourgon',
       price: 80,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     
     // Trajets de Pierre Bernard
@@ -182,7 +182,7 @@ async function main() {
       date: in3Days,
       vehicleType: 'Camion',
       price: 120,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[2].id,
@@ -191,7 +191,7 @@ async function main() {
       date: in5Days,
       vehicleType: 'Remorque',
       price: 200,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[2].id,
@@ -200,7 +200,7 @@ async function main() {
       date: in7Days,
       vehicleType: 'Utilitaire',
       price: 100,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     
     // Trajets de Sophie Dubois
@@ -211,7 +211,7 @@ async function main() {
       date: in3Days,
       vehicleType: 'Camion',
       price: 350,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[3].id,
@@ -220,7 +220,7 @@ async function main() {
       date: in5Days,
       vehicleType: 'Semi-remorque',
       price: 450,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[3].id,
@@ -229,7 +229,7 @@ async function main() {
       date: in7Days,
       vehicleType: 'Fourgon',
       price: 220,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[3].id,
@@ -238,7 +238,7 @@ async function main() {
       date: in10Days,
       vehicleType: 'Utilitaire',
       price: 130,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[3].id,
@@ -247,7 +247,7 @@ async function main() {
       date: in5Days,
       vehicleType: 'Camion',
       price: 90,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
     {
       driverId: users[3].id,
@@ -256,7 +256,7 @@ async function main() {
       date: in7Days,
       vehicleType: 'Fourgon',
       price: 70,
-      status: 'AVAILABLE',
+      status: TripStatus.AVAILABLE,
     },
   ]
 

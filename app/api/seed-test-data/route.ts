@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, TripStatus } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -117,27 +117,27 @@ export async function GET() {
 
     const trips = [
       // Jean Dupont
-      { driverId: users[0].id, fromCity: 'Paris', toCity: 'Lyon', date: tomorrow, vehicleType: 'Camion', price: 250, status: 'AVAILABLE' },
-      { driverId: users[0].id, fromCity: 'Marseille', toCity: 'Toulouse', date: in3Days, vehicleType: 'Semi-remorque', price: 400, status: 'AVAILABLE' },
-      { driverId: users[0].id, fromCity: 'Lille', toCity: 'Strasbourg', date: in5Days, vehicleType: 'Fourgon', price: 180, status: 'AVAILABLE' },
+      { driverId: users[0].id, fromCity: 'Paris', toCity: 'Lyon', date: tomorrow, vehicleType: 'Camion', price: 250, status: TripStatus.AVAILABLE },
+      { driverId: users[0].id, fromCity: 'Marseille', toCity: 'Toulouse', date: in3Days, vehicleType: 'Semi-remorque', price: 400, status: TripStatus.AVAILABLE },
+      { driverId: users[0].id, fromCity: 'Lille', toCity: 'Strasbourg', date: in5Days, vehicleType: 'Fourgon', price: 180, status: TripStatus.AVAILABLE },
       
       // Marie Martin
-      { driverId: users[1].id, fromCity: 'Bordeaux', toCity: 'Paris', date: tomorrow, vehicleType: 'Camion', price: 300, status: 'AVAILABLE' },
-      { driverId: users[1].id, fromCity: 'Nantes', toCity: 'Lyon', date: in3Days, vehicleType: 'Utilitaire', price: 150, status: 'AVAILABLE' },
-      { driverId: users[1].id, fromCity: 'Nice', toCity: 'Marseille', date: in5Days, vehicleType: 'Fourgon', price: 80, status: 'AVAILABLE' },
+      { driverId: users[1].id, fromCity: 'Bordeaux', toCity: 'Paris', date: tomorrow, vehicleType: 'Camion', price: 300, status: TripStatus.AVAILABLE },
+      { driverId: users[1].id, fromCity: 'Nantes', toCity: 'Lyon', date: in3Days, vehicleType: 'Utilitaire', price: 150, status: TripStatus.AVAILABLE },
+      { driverId: users[1].id, fromCity: 'Nice', toCity: 'Marseille', date: in5Days, vehicleType: 'Fourgon', price: 80, status: TripStatus.AVAILABLE },
       
       // Pierre Bernard
-      { driverId: users[2].id, fromCity: 'Rennes', toCity: 'Nantes', date: in3Days, vehicleType: 'Camion', price: 120, status: 'AVAILABLE' },
-      { driverId: users[2].id, fromCity: 'Montpellier', toCity: 'Toulouse', date: in5Days, vehicleType: 'Remorque', price: 200, status: 'AVAILABLE' },
-      { driverId: users[2].id, fromCity: 'Dijon', toCity: 'Lyon', date: in7Days, vehicleType: 'Utilitaire', price: 100, status: 'AVAILABLE' },
+      { driverId: users[2].id, fromCity: 'Rennes', toCity: 'Nantes', date: in3Days, vehicleType: 'Camion', price: 120, status: TripStatus.AVAILABLE },
+      { driverId: users[2].id, fromCity: 'Montpellier', toCity: 'Toulouse', date: in5Days, vehicleType: 'Remorque', price: 200, status: TripStatus.AVAILABLE },
+      { driverId: users[2].id, fromCity: 'Dijon', toCity: 'Lyon', date: in7Days, vehicleType: 'Utilitaire', price: 100, status: TripStatus.AVAILABLE },
       
       // Sophie Dubois
-      { driverId: users[3].id, fromCity: 'Paris', toCity: 'Bordeaux', date: in3Days, vehicleType: 'Camion', price: 350, status: 'AVAILABLE' },
-      { driverId: users[3].id, fromCity: 'Toulouse', toCity: 'Marseille', date: in5Days, vehicleType: 'Semi-remorque', price: 450, status: 'AVAILABLE' },
-      { driverId: users[3].id, fromCity: 'Lyon', toCity: 'Paris', date: in7Days, vehicleType: 'Fourgon', price: 220, status: 'AVAILABLE' },
-      { driverId: users[3].id, fromCity: 'Grenoble', toCity: 'Genève', date: in10Days, vehicleType: 'Utilitaire', price: 130, status: 'AVAILABLE' },
-      { driverId: users[3].id, fromCity: 'Strasbourg', toCity: 'Metz', date: in5Days, vehicleType: 'Camion', price: 90, status: 'AVAILABLE' },
-      { driverId: users[3].id, fromCity: 'Angers', toCity: 'Tours', date: in7Days, vehicleType: 'Fourgon', price: 70, status: 'AVAILABLE' },
+      { driverId: users[3].id, fromCity: 'Paris', toCity: 'Bordeaux', date: in3Days, vehicleType: 'Camion', price: 350, status: TripStatus.AVAILABLE },
+      { driverId: users[3].id, fromCity: 'Toulouse', toCity: 'Marseille', date: in5Days, vehicleType: 'Semi-remorque', price: 450, status: TripStatus.AVAILABLE },
+      { driverId: users[3].id, fromCity: 'Lyon', toCity: 'Paris', date: in7Days, vehicleType: 'Fourgon', price: 220, status: TripStatus.AVAILABLE },
+      { driverId: users[3].id, fromCity: 'Grenoble', toCity: 'Genève', date: in10Days, vehicleType: 'Utilitaire', price: 130, status: TripStatus.AVAILABLE },
+      { driverId: users[3].id, fromCity: 'Strasbourg', toCity: 'Metz', date: in5Days, vehicleType: 'Camion', price: 90, status: TripStatus.AVAILABLE },
+      { driverId: users[3].id, fromCity: 'Angers', toCity: 'Tours', date: in7Days, vehicleType: 'Fourgon', price: 70, status: TripStatus.AVAILABLE },
     ]
 
     const createdTrips = await Promise.all(
