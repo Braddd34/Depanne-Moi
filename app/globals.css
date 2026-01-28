@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS for interactive maps */
+@import 'leaflet/dist/leaflet.css';
+
 /* Custom CSS Variables for Modern Design */
 :root {
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
