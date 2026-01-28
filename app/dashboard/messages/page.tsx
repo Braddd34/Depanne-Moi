@@ -181,7 +181,6 @@ function MessagesContent() {
               <Chat
                 conversationId={selectedConversation.id}
                 otherUser={selectedConversation.otherUser}
-                currentUserId={session?.user?.id || ''}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-500">
