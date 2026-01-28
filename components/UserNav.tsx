@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useI18n } from '@/lib/i18n-context'
 import LanguageSelector from './LanguageSelector'
+import NotificationBell from './NotificationBell'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -56,6 +57,7 @@ export default function UserNav() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <LanguageSelector />
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
