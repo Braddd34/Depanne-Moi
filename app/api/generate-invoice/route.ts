@@ -42,8 +42,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
       }
 
-      // Générer le PDF
-      const doc = generateTripInvoicePDF(trip, session.user)
+      // Générer le PDF (convertir les dates en strings)
+      const tripData = {
+        ...trip,
+        date: trip.date.toISOString(),
+      }
+      const doc = generateTripInvoicePDF(tripData as any, session.user)
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'))
 
       return new NextResponse(pdfBuffer, {
@@ -80,8 +84,16 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
       }
 
-      // Générer le PDF
-      const doc = generateBookingInvoicePDF(booking, session.user)
+      // Générer le PDF (convertir les dates en strings)
+      const bookingData = {
+        ...booking,
+        createdAt: booking.createdAt.toISOString(),
+        trip: {
+          ...booking.trip,
+          date: booking.trip.date.toISOString(),
+        },
+      }
+      const doc = generateBookingInvoicePDF(bookingData as any, session.user)
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'))
 
       return new NextResponse(pdfBuffer, {
