@@ -14,6 +14,7 @@ const navLinks = [
   { href: '/dashboard/my-trips', label: 'Mes trajets', icon: '🚚' },
   { href: '/dashboard/bookings', label: 'Réservations', icon: '📋' },
   { href: '/dashboard/analytics', label: 'Analytics', icon: '📊' },
+  { href: '/dashboard/messages', label: 'Messages', icon: '💬' },
   { href: '/dashboard/history', label: 'Historique', icon: '📚' },
   { href: '/dashboard/manage-bookings', label: 'Gérer réservations', icon: '✅' },
   { href: '/dashboard/map', label: 'Carte', icon: '🗺️' },
