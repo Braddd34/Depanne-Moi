@@ -58,9 +58,43 @@ interface UberStyleMapProps {
 }
 
 /**
- * Géocodage d'une ville avec Nominatim
+ * Cache localStorage pour le géocodage
+ */
+const GEOCODING_CACHE_KEY = 'depannemoi_geocoding_cache'
+
+function getGeocodingCache(): Record<string, Coordinates> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const cache = localStorage.getItem(GEOCODING_CACHE_KEY)
+    return cache ? JSON.parse(cache) : {}
+  } catch {
+    return {}
+  }
+}
+
+function setGeocodingCache(city: string, coords: Coordinates) {
+  if (typeof window === 'undefined') return
+  try {
+    const cache = getGeocodingCache()
+    cache[city.toLowerCase()] = coords
+    localStorage.setItem(GEOCODING_CACHE_KEY, JSON.stringify(cache))
+  } catch {
+    // Ignore errors
+  }
+}
+
+/**
+ * Géocodage d'une ville avec cache localStorage
  */
 async function geocodeCity(city: string): Promise<Coordinates | null> {
+  // Vérifier le cache d'abord
+  const cache = getGeocodingCache()
+  const cached = cache[city.toLowerCase()]
+  if (cached) {
+    console.log(`✅ Cache hit: ${city}`)
+    return cached
+  }
+
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city + ', France')}&format=json&limit=1`,
@@ -73,10 +107,12 @@ async function geocodeCity(city: string): Promise<Coordinates | null> {
     const data = await response.json()
     
     if (data && data.length > 0) {
-      return {
+      const coords = {
         lat: parseFloat(data[0].lat),
         lon: parseFloat(data[0].lon),
       }
+      setGeocodingCache(city, coords)
+      return coords
     }
     return null
   } catch (error) {
@@ -126,28 +162,42 @@ function MapController({ center, zoom }: { center: [number, number], zoom: numbe
 export default function UberStyleMap({ trips, selectedTripId, onTripSelect, onTripClick }: UberStyleMapProps) {
   const [geocodedTrips, setGeocodedTrips] = useState<TripWithRoute[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0 })
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.603354, 1.888334]) // Centre de la France
   const [mapZoom, setMapZoom] = useState(6)
 
   useEffect(() => {
     async function geocodeAndRoute() {
+      setLoadingProgress({ current: 0, total: trips.length })
       const results: TripWithRoute[] = []
       
-      for (const trip of trips) {
-        const from = await geocodeCity(trip.fromCity)
-        await new Promise(resolve => setTimeout(resolve, 1100)) // Rate limit
+      // Afficher la carte immédiatement (même vide)
+      setLoading(false)
+      
+      for (let i = 0; i < trips.length; i++) {
+        const trip = trips[i]
+        setLoadingProgress({ current: i + 1, total: trips.length })
         
+        const from = await geocodeCity(trip.fromCity)
         const to = await geocodeCity(trip.toCity)
-        await new Promise(resolve => setTimeout(resolve, 1100))
         
         if (from && to) {
           const route = await getRoute(from, to)
-          results.push({ trip, from, to, route })
+          const newTrip = { trip, from, to, route }
+          results.push(newTrip)
+          
+          // Afficher progressivement (au lieu d'attendre la fin)
+          setGeocodedTrips([...results])
+        }
+        
+        // Rate limit seulement si pas de cache
+        const cache = getGeocodingCache()
+        if (!cache[trip.fromCity.toLowerCase()] || !cache[trip.toCity.toLowerCase()]) {
+          await new Promise(resolve => setTimeout(resolve, 1100))
         }
       }
       
-      setGeocodedTrips(results)
-      setLoading(false)
+      setLoadingProgress({ current: trips.length, total: trips.length })
     }
 
     if (trips.length > 0) {
@@ -176,21 +226,7 @@ export default function UberStyleMap({ trips, selectedTripId, onTripSelect, onTr
     }
   }, [selectedTripId, geocodedTrips])
 
-  if (loading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin text-6xl mb-4">🗺️</div>
-          <p className="text-gray-600 text-lg font-semibold">
-            Chargement de la carte...
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Géocodage et calcul des itinéraires
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // Pas de loading screen, on affiche la carte directement !
 
   if (geocodedTrips.length === 0) {
     return (
@@ -353,12 +389,26 @@ export default function UberStyleMap({ trips, selectedTripId, onTripSelect, onTr
         </button>
       </div>
 
-      {/* Badge nombre de trajets */}
+      {/* Badge nombre de trajets + progression */}
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1000]">
         <div className="bg-white rounded-full shadow-lg px-6 py-3">
-          <span className="text-sm font-semibold text-gray-600">
-            <span className="text-2xl font-bold text-purple-600">{geocodedTrips.length}</span> trajet{geocodedTrips.length > 1 ? 's' : ''} disponible{geocodedTrips.length > 1 ? 's' : ''}
-          </span>
+          {loadingProgress.current < loadingProgress.total ? (
+            <div className="flex items-center gap-3">
+              <div className="animate-spin text-2xl">⏳</div>
+              <div>
+                <div className="text-sm font-semibold text-gray-600">
+                  Chargement des trajets...
+                </div>
+                <div className="text-xs text-gray-500">
+                  {loadingProgress.current} / {loadingProgress.total}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <span className="text-sm font-semibold text-gray-600">
+              <span className="text-2xl font-bold text-purple-600">{geocodedTrips.length}</span> trajet{geocodedTrips.length > 1 ? 's' : ''} disponible{geocodedTrips.length > 1 ? 's' : ''}
+            </span>
+          )}
         </div>
       </div>
     </div>
