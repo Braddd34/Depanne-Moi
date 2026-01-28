@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sendNotification, emailTemplates } from '@/lib/notifications'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -103,6 +104,22 @@ export async function POST(request: Request) {
       where: { id: data.tripId },
       data: { status: 'RESERVED' },
     })
+
+    // Envoyer une notification au chauffeur
+    try {
+      const emailData = emailTemplates.newBooking(
+        booking.trip,
+        booking.booker.name
+      )
+      await sendNotification({
+        to: booking.trip.driver.email || '',
+        subject: emailData.subject,
+        message: emailData.message,
+      })
+    } catch (error) {
+      console.error('Error sending notification:', error)
+      // Ne pas bloquer la réservation si l'email échoue
+    }
 
     return NextResponse.json({ booking }, { status: 201 })
   } catch (error) {

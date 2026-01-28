@@ -256,14 +256,75 @@ export default function TripDetail() {
             )}
 
             {isMyTrip && (
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center mb-8">
-                <div className="text-4xl mb-2">📝</div>
-                <p className="text-lg font-semibold text-gray-900">
-                  C'est votre trajet
-                </p>
-                <p className="text-sm text-gray-600 mt-2">
-                  Vous ne pouvez pas réserver votre propre trajet
-                </p>
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-2">📝</div>
+                  <p className="text-lg font-semibold text-gray-900">
+                    C'est votre trajet
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Gérez votre trajet avec les actions ci-dessous
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
+                  <Link
+                    href={`/dashboard/trips/${trip.id}/edit`}
+                    className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center font-semibold"
+                  >
+                    ✏️ Modifier
+                  </Link>
+
+                  {trip.status === 'AVAILABLE' && (
+                    <button
+                      onClick={async () => {
+                        if (confirm('Marquer ce trajet comme terminé ?')) {
+                          try {
+                            const res = await fetch(`/api/trips/${trip.id}/update`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: 'COMPLETED' }),
+                            })
+                            if (res.ok) {
+                              alert('✅ Trajet marqué comme terminé')
+                              await loadTrip()
+                            }
+                          } catch (error) {
+                            alert('❌ Erreur')
+                          }
+                        }
+                      }}
+                      className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+                    >
+                      ✓ Terminer
+                    </button>
+                  )}
+
+                  {(trip.status === 'AVAILABLE' || trip.status === 'RESERVED') && (
+                    <button
+                      onClick={async () => {
+                        if (confirm('⚠️ Êtes-vous sûr de vouloir annuler ce trajet ?')) {
+                          try {
+                            const res = await fetch(`/api/trips/${trip.id}/update`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: 'CANCELLED' }),
+                            })
+                            if (res.ok) {
+                              alert('✅ Trajet annulé')
+                              await loadTrip()
+                            }
+                          } catch (error) {
+                            alert('❌ Erreur')
+                          }
+                        }
+                      }}
+                      className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"
+                    >
+                      ❌ Annuler
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
