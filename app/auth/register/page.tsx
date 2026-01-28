@@ -14,16 +14,28 @@ export default function Register() {
     company: '',
     vehicleType: '',
   })
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
+    // Vérifier l'acceptation des CGU (RGPD)
+    if (!acceptedTerms) {
+      alert('Vous devez accepter les Conditions Générales d\'Utilisation et la Politique de Confidentialité pour continuer.')
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          acceptedTerms: true,
+          acceptedTermsAt: new Date().toISOString(),
+        }),
       })
 
       if (res.ok) {
@@ -124,10 +136,47 @@ export default function Register() {
             />
           </div>
 
+          {/* Consentement RGPD - OBLIGATOIRE */}
+          <div className="border-t border-gray-200 pt-4 mt-6">
+            <div className="flex items-start space-x-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1"
+                required
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700">
+                <span className="text-red-600">*</span> J'ai lu et j'accepte les{' '}
+                <a
+                  href="/legal/terms"
+                  target="_blank"
+                  className="text-blue-600 hover:underline"
+                >
+                  Conditions Générales d'Utilisation
+                </a>
+                {' '}et la{' '}
+                <a
+                  href="/legal/privacy"
+                  target="_blank"
+                  className="text-blue-600 hover:underline"
+                >
+                  Politique de Confidentialité (RGPD)
+                </a>
+                .
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 ml-6">
+              🇪🇺 Vos données sont traitées conformément au RGPD. Vous disposez d'un droit
+              d'accès, de rectification et de suppression de vos données.
+            </p>
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50"
+            disabled={loading || !acceptedTerms}
+            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Inscription...' : 'S\'inscrire'}
           </button>

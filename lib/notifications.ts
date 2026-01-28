@@ -47,24 +47,47 @@ export async function sendNotification(data: NotificationData) {
   }
 }
 
-// Templates d'emails avec HTML amélioré
+// Footer RGPD commun pour tous les emails
+const gdprFooter = `
+  <div class="gdpr-notice">
+    <p><strong>🇪🇺 Protection des données (RGPD)</strong></p>
+    <p>Cet email transactionnel est envoyé dans le cadre de votre utilisation de Depanne Moi.</p>
+    <p>Vos données personnelles sont traitées conformément au RGPD et à la législation européenne.</p>
+    <p>
+      <a href="https://depannemoi.vercel.app/legal/privacy">Politique de confidentialité</a> | 
+      <a href="https://depannemoi.vercel.app/legal/terms">CGU</a> | 
+      <a href="https://depannemoi.vercel.app/dashboard/profile">Gérer mes préférences</a>
+    </p>
+  </div>
+  <p style="margin-top: 20px;">Cet email a été envoyé par Depanne Moi</p>
+  <p>Pour toute question, connectez-vous à votre compte ou contactez-nous</p>
+  <p style="font-size: 10px; color: #9ca3af; margin-top: 10px;">
+    Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données.<br>
+    Pour exercer ces droits, rendez-vous dans votre <a href="https://depannemoi.vercel.app/dashboard/profile">profil</a>.
+  </p>
+`
+
+// Templates d'emails avec HTML amélioré et conformité RGPD
 export const emailTemplates = {
   newBooking: (tripDetails: any, bookerName: string, bookerPhone: string, bookerEmail: string) => ({
     subject: '🎉 Nouvelle réservation pour votre trajet !',
     message: `
       <!DOCTYPE html>
-      <html>
+      <html lang="fr">
         <head>
           <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
             .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
             .trip-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
             .contact-info { background: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; }
             .button { display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-            .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; }
+            .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+            .footer a { color: #2563eb; text-decoration: none; }
+            .gdpr-notice { background: #f3f4f6; padding: 15px; border-radius: 6px; font-size: 11px; margin-top: 20px; text-align: left; }
           </style>
         </head>
         <body>
@@ -107,8 +130,7 @@ export const emailTemplates = {
               <p>Bonne route ! 🚚</p>
             </div>
             <div class="footer">
-              <p>Cet email a été envoyé par Depanne Moi</p>
-              <p>Pour toute question, connectez-vous à votre compte</p>
+              ${gdprFooter}
             </div>
           </div>
         </body>
@@ -120,18 +142,21 @@ export const emailTemplates = {
     subject: '✅ Confirmation de votre réservation',
     message: `
       <!DOCTYPE html>
-      <html>
+      <html lang="fr">
         <head>
           <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
             .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
             .trip-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
             .contact-info { background: #d1fae5; padding: 20px; border-radius: 8px; margin: 20px 0; }
             .button { display: inline-block; background: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-            .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; }
+            .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+            .footer a { color: #2563eb; text-decoration: none; }
+            .gdpr-notice { background: #f3f4f6; padding: 15px; border-radius: 6px; font-size: 11px; margin-top: 20px; text-align: left; }
           </style>
         </head>
         <body>
@@ -175,8 +200,7 @@ export const emailTemplates = {
               <p>Bon transport ! 🚚</p>
             </div>
             <div class="footer">
-              <p>Cet email a été envoyé par Depanne Moi</p>
-              <p>Pour toute question, connectez-vous à votre compte</p>
+              ${gdprFooter}
             </div>
           </div>
         </body>

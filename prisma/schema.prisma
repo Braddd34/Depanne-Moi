@@ -18,6 +18,11 @@ model User {
   vehicleType String? // "camion", "remorque", etc.
   role      UserRole @default(USER)
   
+  // RGPD - Conformité UE
+  emailConsent     Boolean  @default(true)  // Consentement pour recevoir des emails transactionnels
+  acceptedTerms    Boolean  @default(false) // Acceptation des CGU et politique de confidentialité
+  acceptedTermsAt  DateTime? // Date d'acceptation des CGU
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

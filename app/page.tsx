@@ -52,6 +52,24 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Footer avec liens légaux (RGPD obligatoire) */}
+      <footer className="bg-white border-t border-gray-200 py-8 mt-16">
+        <div className="container mx-auto px-4 text-center text-sm text-gray-600">
+          <div className="flex justify-center gap-6 mb-4">
+            <Link href="/legal/terms" className="hover:text-blue-600 transition">
+              Conditions Générales d'Utilisation
+            </Link>
+            <span>•</span>
+            <Link href="/legal/privacy" className="hover:text-blue-600 transition">
+              🇪🇺 Politique de Confidentialité (RGPD)
+            </Link>
+          </div>
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} Depanne Moi - Plateforme de mise en relation de professionnels du transport
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -13,6 +13,11 @@ const registerSchema = z.object({
   phone: z.string().min(10),
   company: z.string().optional(),
   vehicleType: z.string().optional(),
+  // RGPD
+  acceptedTerms: z.boolean().refine((val) => val === true, {
+    message: 'Vous devez accepter les CGU et la Politique de Confidentialité',
+  }),
+  acceptedTermsAt: z.string().optional(),
 })
 
 export async function POST(request: Request) {
@@ -44,6 +49,10 @@ export async function POST(request: Request) {
         phone: data.phone,
         company: data.company,
         vehicleType: data.vehicleType,
+        // RGPD
+        acceptedTerms: data.acceptedTerms,
+        acceptedTermsAt: data.acceptedTermsAt ? new Date(data.acceptedTermsAt) : new Date(),
+        emailConsent: true, // Par défaut, consent pour emails transactionnels
       },
       select: {
         id: true,
