@@ -25,8 +25,9 @@ export async function sendNotification(data: NotificationData) {
 
   try {
     // Envoyer l'email via Resend
+    // Utilise le domaine de test Resend (onboarding@resend.dev) car depannemoi.vercel.app n'est pas vérifié
     const response = await resend.emails.send({
-      from: 'Depanne Moi <noreply@depannemoi.vercel.app>',
+      from: 'Depanne Moi <onboarding@resend.dev>',
       to: data.to,
       subject: data.subject,
       html: data.message,
