@@ -4,25 +4,18 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import UserNav from '@/components/UserNav'
 
-interface Trip {
-  id: string
-  fromCity: string
-  toCity: string
-  date: string
-  vehicleType: string
-  price?: number
-  status: string
-  driver: {
-    name: string
-    phone: string
-  }
+interface Stats {
+  myTrips: number
+  myBookings: number
+  availableTrips: number
 }
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [trips, setTrips] = useState<Trip[]>([])
+  const [stats, setStats] = useState<Stats>({ myTrips: 0, myBookings: 0, availableTrips: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,24 +26,45 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (session) {
-      fetchTrips()
+      fetchStats()
     }
   }, [session])
 
-  const fetchTrips = async () => {
+  const fetchStats = async () => {
     try {
-      const res = await fetch('/api/trips')
-      const data = await res.json()
-      setTrips(data.trips || [])
+      // Récupérer tous les trajets
+      const tripsRes = await fetch('/api/trips')
+      const tripsData = await tripsRes.json()
+      
+      // Récupérer mes réservations
+      const bookingsRes = await fetch('/api/bookings')
+      const bookingsData = await bookingsRes.json()
+
+      const allTrips = tripsData.trips || []
+      const myTrips = allTrips.filter((t: any) => t.driverId === session?.user?.id)
+      const myBookings = bookingsData.bookings || []
+
+      setStats({
+        myTrips: myTrips.length,
+        myBookings: myBookings.length,
+        availableTrips: allTrips.length,
+      })
     } catch (error) {
-      console.error('Error fetching trips:', error)
+      console.error('Error fetching stats:', error)
     } finally {
       setLoading(false)
     }
   }
 
   if (status === 'loading' || loading) {
-    return <div className="p-8">Chargement...</div>
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <UserNav />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center">Chargement...</div>
+        </div>
+      </div>
+    )
   }
 
   if (!session) {
@@ -59,72 +73,111 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Depanne Moi</h1>
-          <div className="flex gap-4">
+      <UserNav />
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Bonjour, {session.user.name} 👋
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Bienvenue sur votre tableau de bord
+          </p>
+        </div>
+
+        {/* Statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Link href="/dashboard/my-trips" className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Mes trajets</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.myTrips}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🚚</span>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/dashboard/my-bookings" className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Mes réservations</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.myBookings}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">📋</span>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/dashboard/explore" className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Trajets disponibles</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.availableTrips}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🔍</span>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Actions rapides */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Actions rapides</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/dashboard/trips/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group"
             >
-              Nouveau trajet
+              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl">➕</span>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Publier un trajet</p>
+                <p className="text-sm text-gray-600">Proposez un trajet retour disponible</p>
+              </div>
             </Link>
+
             <Link
-              href="/api/auth/signout"
-              className="text-gray-600 hover:text-gray-900"
+              href="/dashboard/explore"
+              className="flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors group"
             >
-              Déconnexion
+              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl">🔍</span>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Trouver un trajet</p>
+                <p className="text-sm text-gray-600">Recherchez un transport disponible</p>
+              </div>
             </Link>
           </div>
         </div>
-      </nav>
 
-      <div className="container mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold mb-6">Trajets disponibles</h2>
-
-        {trips.length === 0 ? (
-          <div className="bg-white p-8 rounded-lg shadow text-center">
-            <p className="text-gray-600 mb-4">Aucun trajet disponible pour le moment</p>
-            <Link
-              href="/dashboard/trips/new"
-              className="text-blue-600 hover:underline"
-            >
-              Créer le premier trajet
-            </Link>
+        {/* Guide rapide */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow p-6 text-white">
+          <h2 className="text-xl font-bold mb-4">💡 Comment ça marche ?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+              <div className="text-3xl mb-2">1️⃣</div>
+              <p className="font-semibold mb-1">Publiez vos trajets retour</p>
+              <p className="text-sm text-blue-100">Indiquez vos trajets à vide disponibles</p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+              <div className="text-3xl mb-2">2️⃣</div>
+              <p className="font-semibold mb-1">Trouvez des trajets</p>
+              <p className="text-sm text-blue-100">Recherchez selon vos besoins</p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+              <div className="text-3xl mb-2">3️⃣</div>
+              <p className="font-semibold mb-1">Contactez directement</p>
+              <p className="text-sm text-blue-100">Coordonnées échangées après réservation</p>
+            </div>
           </div>
-        ) : (
-          <div className="grid gap-4">
-            {trips.map((trip) => (
-              <div key={trip.id} className="bg-white p-6 rounded-lg shadow">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {trip.fromCity} → {trip.toCity}
-                    </h3>
-                    <p className="text-gray-600 mt-2">
-                      Date: {new Date(trip.date).toLocaleDateString('fr-FR')}
-                    </p>
-                    <p className="text-gray-600">
-                      Type de véhicule: {trip.vehicleType}
-                    </p>
-                    {trip.price && (
-                      <p className="text-gray-600">Prix: {trip.price}€</p>
-                    )}
-                    <p className="text-sm text-gray-500 mt-2">
-                      Par: {trip.driver.name} - {trip.driver.phone}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/dashboard/trips/${trip.id}`}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  >
-                    Voir détails
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )
