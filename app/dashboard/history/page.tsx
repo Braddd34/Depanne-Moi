@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import UserNav from '@/components/UserNav'
 import Link from 'next/link'
+import ReviewModal from '@/components/ReviewModal'
 
 interface Trip {
   id: string
@@ -44,6 +45,36 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'trips' | 'bookings'>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  
+  // Modal de notation
+  const [reviewModal, setReviewModal] = useState<{
+    isOpen: boolean
+    tripId: string
+    reviewedUserId: string
+    reviewedUserName: string
+    tripInfo: { fromCity: string; toCity: string; date: string }
+  } | null>(null)
+
+  const openReviewModal = (
+    tripId: string,
+    reviewedUserId: string,
+    reviewedUserName: string,
+    fromCity: string,
+    toCity: string,
+    date: string
+  ) => {
+    setReviewModal({
+      isOpen: true,
+      tripId,
+      reviewedUserId,
+      reviewedUserName,
+      tripInfo: { fromCity, toCity, date },
+    })
+  }
+
+  const closeReviewModal = () => {
+    setReviewModal(null)
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -276,42 +307,76 @@ export default function HistoryPage() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {filteredBookings.map((booking) => (
-                  <div key={booking.id} className="glass rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-3">
-                          <div className={`w-3 h-3 rounded-full ${
-                            booking.status === 'CONFIRMED' ? 'bg-green-500' :
-                            booking.status === 'PENDING' ? 'bg-orange-500' :
-                            'bg-gray-400'
-                          }`}></div>
-                          <h3 className="text-xl font-bold text-gray-900">
-                            {booking.trip.fromCity} → {booking.trip.toCity}
-                          </h3>
-                          <span className={`px-3 py-1 rounded-xl text-xs font-bold ${
-                            booking.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' :
-                            booking.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {booking.status}
-                          </span>
+                {filteredBookings.map((booking) => {
+                  // Vérifier si le trajet est terminé et si on peut noter
+                  const tripCompleted = booking.status === 'CONFIRMED' && new Date(booking.trip.date) < new Date()
+                  
+                  return (
+                    <div key={booking.id} className="glass rounded-2xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className={`w-3 h-3 rounded-full ${
+                              booking.status === 'CONFIRMED' ? 'bg-green-500' :
+                              booking.status === 'PENDING' ? 'bg-orange-500' :
+                              'bg-gray-400'
+                            }`}></div>
+                            <h3 className="text-xl font-bold text-gray-900">
+                              {booking.trip.fromCity} → {booking.trip.toCity}
+                            </h3>
+                            <span className={`px-3 py-1 rounded-xl text-xs font-bold ${
+                              booking.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' :
+                              booking.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {booking.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-6 text-sm text-gray-600">
+                            <span>📅 {new Date(booking.trip.date).toLocaleDateString('fr-FR')}</span>
+                            <span>🚚 {booking.trip.vehicleType}</span>
+                            <span>👤 {booking.trip.driver.name}</span>
+                            <span className="text-xs text-gray-400">
+                              Réservé le {new Date(booking.createdAt).toLocaleDateString('fr-FR')}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-6 text-sm text-gray-600">
-                          <span>📅 {new Date(booking.trip.date).toLocaleDateString('fr-FR')}</span>
-                          <span>🚚 {booking.trip.vehicleType}</span>
-                          <span>👤 {booking.trip.driver.name}</span>
-                          <span className="text-xs text-gray-400">
-                            Réservé le {new Date(booking.createdAt).toLocaleDateString('fr-FR')}
-                          </span>
-                        </div>
+                        
+                        {/* Bouton noter si trajet terminé */}
+                        {tripCompleted && (
+                          <button
+                            onClick={() => openReviewModal(
+                              booking.trip.id,
+                              booking.trip.driver.name === session?.user?.name ? booking.id : booking.trip.driver.name,
+                              booking.trip.driver.name,
+                              booking.trip.fromCity,
+                              booking.trip.toCity,
+                              booking.trip.date
+                            )}
+                            className="ml-4 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold hover:shadow-lg transition text-sm"
+                          >
+                            ⭐ Noter
+                          </button>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
+        )}
+
+        {/* Modal de notation */}
+        {reviewModal && (
+          <ReviewModal
+            isOpen={reviewModal.isOpen}
+            onClose={closeReviewModal}
+            tripId={reviewModal.tripId}
+            reviewedUserId={reviewModal.reviewedUserId}
+            reviewedUserName={reviewModal.reviewedUserName}
+            tripInfo={reviewModal.tripInfo}
+          />
         )}
       </div>
     </div>
