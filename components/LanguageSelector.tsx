@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useI18n } from '@/lib/i18n-context'
+import { locales } from '@/i18n.config'
 
 export default function LanguageSelector() {
   const { locale, setLocale, localeNames } = useI18n()
@@ -28,7 +29,7 @@ export default function LanguageSelector() {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 mt-2 w-48 glass rounded-2xl shadow-xl z-20 overflow-hidden">
-            {(Object.keys(localeNames) as Array<keyof typeof localeNames>).map((loc) => (
+            {locales.map((loc) => (
               <button
                 key={loc}
                 onClick={() => {
