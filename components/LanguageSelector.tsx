@@ -2,13 +2,12 @@
 
 import { useState } from 'react'
 import { useI18n } from '@/lib/i18n-context'
-import { locales, localeNames, type Locale } from '@/i18n.config'
 
 export default function LanguageSelector() {
-  const { locale, setLocale } = useI18n()
+  const { locale, setLocale, localeNames } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
 
-  const flags: Record<Locale, string> = {
+  const flags: Record<string, string> = {
     fr: '🇫🇷',
     en: '🇬🇧',
     es: '🇪🇸',
@@ -19,39 +18,29 @@ export default function LanguageSelector() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/80 backdrop-blur-sm hover:bg-white transition text-gray-700 font-semibold border-2 border-gray-200"
+        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-xl transition"
       >
         <span className="text-xl">{flags[locale]}</span>
-        <span className="hidden sm:inline">{localeNames[locale]}</span>
-        <span className="text-xs">▼</span>
+        <span className="font-semibold text-gray-700">{localeNames[locale]}</span>
       </button>
 
       {isOpen && (
         <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          ></div>
-
-          {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 overflow-hidden z-50">
-            {locales.map((loc) => (
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-48 glass rounded-2xl shadow-xl z-20 overflow-hidden">
+            {Object.keys(localeNames).map((loc) => (
               <button
                 key={loc}
                 onClick={() => {
                   setLocale(loc)
                   setIsOpen(false)
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-50 transition ${
-                  locale === loc ? 'bg-purple-100' : ''
+                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${
+                  loc === locale ? 'bg-purple-50' : ''
                 }`}
               >
-                <span className="text-2xl">{flags[loc]}</span>
-                <span className="font-semibold text-gray-700">
-                  {localeNames[loc]}
-                </span>
-                {locale === loc && <span className="ml-auto text-purple-600">✓</span>}
+                <span className="text-xl">{flags[loc]}</span>
+                <span className="font-semibold text-gray-900">{localeNames[loc]}</span>
               </button>
             ))}
           </div>

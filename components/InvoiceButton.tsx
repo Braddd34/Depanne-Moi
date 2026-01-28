@@ -11,7 +11,7 @@ interface InvoiceButtonProps {
 export default function InvoiceButton({ type, id, label = 'Télécharger facture' }: InvoiceButtonProps) {
   const [loading, setLoading] = useState(false)
 
-  const downloadInvoice = async () => {
+  const handleDownload = async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/generate-invoice', {
@@ -20,23 +20,23 @@ export default function InvoiceButton({ type, id, label = 'Télécharger facture
         body: JSON.stringify({ type, id }),
       })
 
-      if (!res.ok) {
-        throw new Error('Erreur lors de la génération')
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `facture-${type}-${id}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Erreur lors de la génération de la facture')
       }
-
-      // Télécharger le PDF
-      const blob = await res.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `facture-${type}-${id.substring(0, 8)}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
     } catch (error) {
-      console.error('Error downloading invoice:', error)
-      alert('Erreur lors du téléchargement de la facture')
+      console.error('Invoice generation error:', error)
+      alert('Erreur lors de la génération de la facture')
     } finally {
       setLoading(false)
     }
@@ -44,11 +44,11 @@ export default function InvoiceButton({ type, id, label = 'Télécharger facture
 
   return (
     <button
-      onClick={downloadInvoice}
+      onClick={handleDownload}
       disabled={loading}
-      className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+      className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
     >
-      {loading ? '📥 Génération...' : `📄 ${label}`}
+      {loading ? '🔄 Génération...' : `📄 ${label}`}
     </button>
   )
 }
