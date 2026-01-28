@@ -14,6 +14,7 @@ interface Trip {
   vehicleType: string
   price: number | null
   status: string
+  driverId: string
   createdAt: string
   bookings: Array<{
     id: string
