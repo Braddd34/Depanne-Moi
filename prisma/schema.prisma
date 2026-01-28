@@ -37,6 +37,8 @@ model User {
   trips     Trip[]
   bookings  Booking[]
   verificationSessions VerificationSession[]
+  reviewsGiven    Review[] @relation("ReviewsGiven")
+  reviewsReceived Review[] @relation("ReviewsReceived")
   
   @@map("users")
 }
@@ -77,6 +79,7 @@ model Trip {
   updatedAt   DateTime @updatedAt
   
   bookings   Booking[]
+  reviews    Review[]
   
   @@map("trips")
 }
@@ -108,6 +111,33 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+model Review {
+  id              String   @id @default(cuid())
+  
+  // L'utilisateur qui donne l'avis
+  reviewerId      String
+  reviewer        User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  
+  // L'utilisateur qui reçoit l'avis
+  reviewedUserId  String
+  reviewedUser    User     @relation("ReviewsReceived", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+  
+  // Le trajet concerné
+  tripId          String
+  trip            Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  // Notation et commentaire
+  rating          Int      // 1-5 étoiles
+  comment         String?  // Commentaire optionnel
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Un utilisateur ne peut laisser qu'un seul avis par trajet
+  @@unique([reviewerId, tripId])
+  @@map("reviews")
 }
 
 enum UserRole {
