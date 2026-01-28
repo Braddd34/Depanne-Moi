@@ -11,6 +11,7 @@ export default function UserNav() {
   const navItems = [
     { href: '/dashboard', label: 'Accueil', icon: '🏠' },
     { href: '/dashboard/explore', label: 'Trajets disponibles', icon: '🔍' },
+    { href: '/dashboard/map', label: 'Carte', icon: '🗺️' },
     { href: '/dashboard/my-trips', label: 'Mes trajets', icon: '🚚' },
     { href: '/dashboard/my-bookings', label: 'Mes réservations', icon: '📋' },
     { href: '/dashboard/manage-bookings', label: 'Gérer réservations', icon: '✅' },
