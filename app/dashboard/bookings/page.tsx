@@ -31,7 +31,7 @@ export default function BookingsPage() {
   const router = useRouter()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -59,11 +59,11 @@ export default function BookingsPage() {
     }
   }
 
-  const cancelBooking = async (id: string) => {
+  const handleCancel = async (bookingId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) return
 
     try {
-      const res = await fetch(`/api/bookings/${id}`, {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
         method: 'DELETE',
       })
 
@@ -74,14 +74,15 @@ export default function BookingsPage() {
         alert('Erreur lors de l\'annulation')
       }
     } catch (error) {
-      console.error('Cancel booking error:', error)
+      console.error('Cancel error:', error)
       alert('Erreur lors de l\'annulation')
     }
   }
 
-  const filteredBookings = filterStatus === 'all' 
-    ? bookings 
-    : bookings.filter(b => b.status === filterStatus)
+  const filteredBookings = bookings.filter(booking => {
+    if (filter === 'all') return true
+    return booking.status === filter
+  })
 
   const stats = {
     total: bookings.length,
@@ -107,61 +108,75 @@ export default function BookingsPage() {
           <h1 className="text-5xl font-bold text-gray-900 mb-2">
             Mes <span className="text-gradient">Réservations</span> 📋
           </h1>
-          <p className="text-gray-500 text-lg">Suivez l'état de toutes vos réservations</p>
+          <p className="text-gray-500 text-lg">
+            Suivez toutes vos demandes de transport
+          </p>
         </div>
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="glass rounded-3xl p-6">
+          <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">📊</div>
-            <div className="text-3xl font-bold text-gradient">{stats.total}</div>
-            <div className="text-sm text-gray-600 font-semibold">Total</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+            <div className="text-sm text-gray-600">Total</div>
           </div>
-
-          <div className="glass rounded-3xl p-6">
+          <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">⏳</div>
-            <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-            <div className="text-sm text-gray-600 font-semibold">En attente</div>
+            <div className="text-3xl font-bold text-orange-600">{stats.pending}</div>
+            <div className="text-sm text-gray-600">En attente</div>
           </div>
-
-          <div className="glass rounded-3xl p-6">
+          <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">✅</div>
             <div className="text-3xl font-bold text-green-600">{stats.confirmed}</div>
-            <div className="text-sm text-gray-600 font-semibold">Confirmées</div>
+            <div className="text-sm text-gray-600">Confirmées</div>
           </div>
-
-          <div className="glass rounded-3xl p-6">
+          <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">❌</div>
             <div className="text-3xl font-bold text-red-600">{stats.cancelled}</div>
-            <div className="text-sm text-gray-600 font-semibold">Annulées</div>
+            <div className="text-sm text-gray-600">Annulées</div>
           </div>
         </div>
 
-        <div className="glass rounded-3xl p-6 mb-8">
-          <div className="flex items-center gap-4">
-            <span className="font-bold text-gray-700">Filtrer:</span>
+        <div className="glass rounded-2xl p-4 mb-6">
+          <div className="flex gap-2">
             <button
-              onClick={() => setFilterStatus('all')}
+              onClick={() => setFilter('all')}
               className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filterStatus === 'all' ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+                filter === 'all'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               Toutes ({stats.total})
             </button>
             <button
-              onClick={() => setFilterStatus('PENDING')}
+              onClick={() => setFilter('PENDING')}
               className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filterStatus === 'PENDING' ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white' : 'bg-gray-200 text-gray-700'
+                filter === 'PENDING'
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               En attente ({stats.pending})
             </button>
             <button
-              onClick={() => setFilterStatus('CONFIRMED')}
+              onClick={() => setFilter('CONFIRMED')}
               className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filterStatus === 'CONFIRMED' ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' : 'bg-gray-200 text-gray-700'
+                filter === 'CONFIRMED'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               Confirmées ({stats.confirmed})
+            </button>
+            <button
+              onClick={() => setFilter('CANCELLED')}
+              className={`px-4 py-2 rounded-xl font-semibold transition ${
+                filter === 'CANCELLED'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Annulées ({stats.cancelled})
             </button>
           </div>
         </div>
@@ -173,80 +188,82 @@ export default function BookingsPage() {
             <p className="text-gray-600">Explorez les trajets disponibles pour réserver</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {filteredBookings.map((booking) => (
               <div key={booking.id} className="glass rounded-3xl p-6 hover-lift">
                 <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="text-sm text-purple-600 font-bold mb-1">{booking.trip.vehicleType}</div>
-                    <div className="text-sm text-gray-500">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-4 py-2 rounded-xl font-bold text-sm ${
+                        booking.status === 'PENDING'
+                          ? 'bg-orange-100 text-orange-700'
+                          : booking.status === 'CONFIRMED'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {booking.status === 'PENDING'
+                        ? '⏳ En attente'
+                        : booking.status === 'CONFIRMED'
+                        ? '✅ Confirmée'
+                        : '❌ Annulée'}
+                    </span>
+                    <span className="text-sm text-gray-500">
                       Réservé le {new Date(booking.createdAt).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
+                  <div className="text-2xl font-bold text-gradient">{booking.trip.price}€</div>
+                </div>
+
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold">
+                      A
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Départ</div>
+                      <div className="font-bold text-gray-900">{booking.trip.fromCity}</div>
                     </div>
                   </div>
-                  <div>
-                    <span className={`px-3 py-1 rounded-xl text-xs font-bold ${
-                      booking.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                      booking.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
-                      {booking.status === 'PENDING' ? '⏳ En attente' :
-                       booking.status === 'CONFIRMED' ? '✅ Confirmée' :
-                       '❌ Annulée'}
-                    </span>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                      B
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Arrivée</div>
+                      <div className="font-bold text-gray-900">{booking.trip.toCity}</div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold">
-                        A
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500">Départ</div>
-                        <div className="font-bold text-gray-900">{booking.trip.fromCity}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
-                        B
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500">Arrivée</div>
-                        <div className="font-bold text-gray-900">{booking.trip.toCity}</div>
-                      </div>
-                    </div>
-
-                    <div className="text-2xl font-bold text-gradient pt-2">{booking.trip.price}€</div>
-                  </div>
-
-                  <div className="border-l-2 border-gray-200 pl-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">👤</span>
-                      <div>
-                        <div className="font-bold text-gray-900">{booking.trip.driver.name}</div>
-                        {booking.trip.driver.company && (
-                          <div className="text-sm text-gray-600">{booking.trip.driver.company}</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-3">📱 {booking.trip.driver.phone}</div>
-                    
-                    <div className="flex gap-2">
-                      {booking.status === 'CONFIRMED' && (
-                        <InvoiceButton type="booking" id={booking.id} label="Facture" />
-                      )}
-                      {booking.status === 'PENDING' && (
-                        <button
-                          onClick={() => cancelBooking(booking.id)}
-                          className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition text-sm"
-                        >
-                          ❌ Annuler
-                        </button>
+                <div className="border-t-2 border-gray-200 pt-4 mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">👤</span>
+                    <div>
+                      <div className="font-bold text-gray-900">{booking.trip.driver.name}</div>
+                      {booking.trip.driver.company && (
+                        <div className="text-sm text-gray-600">{booking.trip.driver.company}</div>
                       )}
                     </div>
                   </div>
+                  <div className="text-sm text-gray-600">
+                    📱 {booking.trip.driver.phone} · 📅 {new Date(booking.trip.date).toLocaleDateString('fr-FR')} · 🚗 {booking.trip.vehicleType}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {booking.status === 'CONFIRMED' && (
+                    <InvoiceButton type="booking" id={booking.id} />
+                  )}
+                  {booking.status === 'PENDING' && (
+                    <button
+                      onClick={() => handleCancel(booking.id)}
+                      className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition text-sm"
+                    >
+                      ❌ Annuler
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
