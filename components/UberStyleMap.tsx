@@ -24,10 +24,6 @@ const Polyline = dynamic(
   () => import('react-leaflet').then((mod) => mod.Polyline),
   { ssr: false }
 )
-const useMap = dynamic(
-  () => import('react-leaflet').then((mod) => mod.useMap),
-  { ssr: false }
-)
 
 interface Trip {
   id: string
@@ -113,9 +109,12 @@ async function getRoute(from: Coordinates, to: Coordinates): Promise<[number, nu
   }
 }
 
+// Import direct du hook useMap (utilisé seulement côté client)
+import { useMap as useLeafletMap } from 'react-leaflet'
+
 // Composant pour recentrer la carte
 function MapController({ center, zoom }: { center: [number, number], zoom: number }) {
-  const map = useMap()
+  const map = useLeafletMap()
   
   useEffect(() => {
     map.setView(center, zoom)
