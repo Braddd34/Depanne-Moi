@@ -15,10 +15,10 @@ interface Trip {
   price: number
   status: string
   createdAt: string
-  bookings: {
+  bookings: Array<{
     id: string
     status: string
-  }[]
+  }>
 }
 
 export default function MyTripsPage() {
@@ -26,6 +26,7 @@ export default function MyTripsPage() {
   const router = useRouter()
   const [trips, setTrips] = useState<Trip[]>([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -34,12 +35,12 @@ export default function MyTripsPage() {
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchMyTrips()
+    if (status === 'authenticated' && session?.user?.id) {
+      fetchTrips()
     }
-  }, [status])
+  }, [status, session])
 
-  const fetchMyTrips = async () => {
+  const fetchTrips = async () => {
     try {
       const res = await fetch(`/api/trips?driverId=${session?.user?.id}`)
       if (res.ok) {
@@ -54,9 +55,7 @@ export default function MyTripsPage() {
   }
 
   const deleteTrip = async (tripId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) {
-      return
-    }
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) return
 
     try {
       const res = await fetch(`/api/trips/${tripId}`, {
@@ -64,8 +63,8 @@ export default function MyTripsPage() {
       })
 
       if (res.ok) {
-        alert('Trajet supprimé avec succès')
-        fetchMyTrips()
+        alert('Trajet supprimé avec succès !')
+        fetchTrips()
       } else {
         alert('Erreur lors de la suppression')
       }
@@ -75,24 +74,16 @@ export default function MyTripsPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'AVAILABLE': return 'bg-green-100 text-green-700'
-      case 'RESERVED': return 'bg-blue-100 text-blue-700'
-      case 'COMPLETED': return 'bg-gray-100 text-gray-700'
-      case 'CANCELLED': return 'bg-red-100 text-red-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
+  const filteredTrips = trips.filter((trip) => {
+    if (filter === 'all') return true
+    return trip.status === filter
+  })
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'AVAILABLE': return '✅ Disponible'
-      case 'RESERVED': return '📋 Réservé'
-      case 'COMPLETED': return '✔️ Terminé'
-      case 'CANCELLED': return '❌ Annulé'
-      default: return status
-    }
+  const stats = {
+    total: trips.length,
+    available: trips.filter((t) => t.status === 'AVAILABLE').length,
+    reserved: trips.filter((t) => t.status === 'RESERVED').length,
+    completed: trips.filter((t) => t.status === 'COMPLETED').length,
   }
 
   if (status === 'loading' || loading) {
@@ -106,45 +97,89 @@ export default function MyTripsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
       <UserNav />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8 fade-in">
-          <div>
-            <h1 className="text-5xl font-bold text-gray-900 mb-2">
-              Mes <span className="text-gradient">Trajets</span> 🚚
-            </h1>
-            <p className="text-gray-500 text-lg">
-              {trips.length} trajet{trips.length > 1 ? 's' : ''} créé{trips.length > 1 ? 's' : ''}
-            </p>
+        <div className="mb-8 fade-in">
+          <h1 className="text-5xl font-bold text-gray-900 mb-2">
+            Mes <span className="text-gradient">Trajets</span> 🚚
+          </h1>
+          <p className="text-gray-500 text-lg">Gérez tous vos trajets en un coup d'œil</p>
+        </div>
+
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <div className="glass rounded-2xl p-6 text-center hover-lift">
+            <div className="text-3xl font-bold text-gray-900 mb-1">{stats.total}</div>
+            <div className="text-sm text-gray-600">Total trajets</div>
           </div>
+          <div className="glass rounded-2xl p-6 text-center hover-lift">
+            <div className="text-3xl font-bold text-green-600 mb-1">{stats.available}</div>
+            <div className="text-sm text-gray-600">Disponibles</div>
+          </div>
+          <div className="glass rounded-2xl p-6 text-center hover-lift">
+            <div className="text-3xl font-bold text-orange-600 mb-1">{stats.reserved}</div>
+            <div className="text-sm text-gray-600">Réservés</div>
+          </div>
+          <div className="glass rounded-2xl p-6 text-center hover-lift">
+            <div className="text-3xl font-bold text-blue-600 mb-1">{stats.completed}</div>
+            <div className="text-sm text-gray-600">Terminés</div>
+          </div>
+        </div>
+
+        <div className="glass rounded-3xl p-6 mb-6">
+          <div className="flex items-center gap-4">
+            <span className="font-bold text-gray-700">Filtrer :</span>
+            {[
+              { value: 'all', label: 'Tous' },
+              { value: 'AVAILABLE', label: 'Disponibles' },
+              { value: 'RESERVED', label: 'Réservés' },
+              { value: 'COMPLETED', label: 'Terminés' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setFilter(option.value)}
+                className={`px-4 py-2 rounded-xl font-semibold transition ${
+                  filter === option.value
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
           <Link
             href="/dashboard/trips/new"
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
+            className="inline-block px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
           >
-            ➕ Créer un trajet
+            ➕ Créer un nouveau trajet
           </Link>
         </div>
 
-        {trips.length === 0 ? (
+        {filteredTrips.length === 0 ? (
           <div className="glass rounded-3xl p-12 text-center">
             <p className="text-6xl mb-4">🚚</p>
-            <p className="text-2xl font-bold text-gray-900 mb-2">Aucun trajet créé</p>
-            <p className="text-gray-600 mb-6">Commencez par créer votre premier trajet</p>
-            <Link
-              href="/dashboard/trips/new"
-              className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
-            >
-              ➕ Créer un trajet
-            </Link>
+            <p className="text-2xl font-bold text-gray-900 mb-2">Aucun trajet</p>
+            <p className="text-gray-600">Créez votre premier trajet pour commencer</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trips.map((trip) => (
+            {filteredTrips.map((trip) => (
               <div key={trip.id} className="glass rounded-3xl p-6 hover-lift">
                 <div className="flex items-start justify-between mb-4">
-                  <span className={`px-3 py-1 rounded-xl text-sm font-bold ${getStatusColor(trip.status)}`}>
-                    {getStatusLabel(trip.status)}
-                  </span>
+                  <div className={`px-3 py-1 rounded-xl text-sm font-bold ${
+                    trip.status === 'AVAILABLE' ? 'bg-green-100 text-green-700' :
+                    trip.status === 'RESERVED' ? 'bg-orange-100 text-orange-700' :
+                    trip.status === 'COMPLETED' ? 'bg-blue-100 text-blue-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {trip.status === 'AVAILABLE' ? '✅ Disponible' :
+                     trip.status === 'RESERVED' ? '🔒 Réservé' :
+                     trip.status === 'COMPLETED' ? '✔️ Terminé' :
+                     '❌ Annulé'}
+                  </div>
                   <div className="text-2xl font-bold text-gradient">{trip.price}€</div>
                 </div>
 
@@ -171,34 +206,29 @@ export default function MyTripsPage() {
                 </div>
 
                 <div className="border-t-2 border-gray-200 pt-4 mb-4 space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">📅 Date</span>
-                    <span className="font-semibold text-gray-900">
-                      {new Date(trip.date).toLocaleDateString('fr-FR')}
-                    </span>
+                  <div className="text-sm text-gray-600">🚚 {trip.vehicleType}</div>
+                  <div className="text-sm text-gray-600">
+                    📅 {new Date(trip.date).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">🚚 Véhicule</span>
-                    <span className="font-semibold text-gray-900">{trip.vehicleType}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">📋 Réservations</span>
-                    <span className="font-semibold text-gray-900">
-                      {trip.bookings.filter(b => b.status === 'CONFIRMED').length} confirmée{trip.bookings.filter(b => b.status === 'CONFIRMED').length > 1 ? 's' : ''}
-                    </span>
+                  <div className="text-sm text-gray-600">
+                    📋 {trip.bookings.length} réservation{trip.bookings.length > 1 ? 's' : ''}
                   </div>
                 </div>
 
                 <div className="flex gap-2">
                   <Link
                     href={`/dashboard/trips/${trip.id}/edit`}
-                    className="flex-1 py-2 bg-blue-100 text-blue-700 rounded-xl font-bold hover:bg-blue-200 transition text-center text-sm"
+                    className="flex-1 text-center px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-semibold hover:bg-blue-200 transition"
                   >
                     ✏️ Modifier
                   </Link>
                   <button
                     onClick={() => deleteTrip(trip.id)}
-                    className="flex-1 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition text-sm"
+                    className="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-xl font-semibold hover:bg-red-200 transition"
                   >
                     🗑️ Supprimer
                   </button>
