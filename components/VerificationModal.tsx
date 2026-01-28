@@ -23,6 +23,21 @@ export default function VerificationModal({
     }
   }, [isOpen])
 
+  // Écouter les messages de l'iFrame pour fermer automatiquement
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'VERIFICATION_COMPLETE') {
+        // Fermer la modal automatiquement
+        setTimeout(() => {
+          onClose()
+        }, 1000) // Délai de 1 seconde pour que l'utilisateur voie le message de succès
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [onClose])
+
   if (!isOpen) return null
 
   const typeLabels = {

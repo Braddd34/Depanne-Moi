@@ -51,10 +51,15 @@ function TestVerificationContent() {
     })
 
     // Message de succès
-    alert('✅ Vérification réussie ! Vous pouvez fermer cette fenêtre.')
+    alert('✅ Vérification réussie ! La fenêtre va se fermer automatiquement.')
     
-    // Retour au dashboard
-    window.location.href = '/dashboard/verification'
+    // Si on est dans un iFrame, envoyer un message au parent pour fermer la modal
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'VERIFICATION_COMPLETE' }, '*')
+    } else {
+      // Sinon rediriger vers le dashboard
+      window.location.href = '/dashboard/verification'
+    }
   }
 
   return (
