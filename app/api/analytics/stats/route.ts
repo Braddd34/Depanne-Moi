@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       }),
       // Total des réservations faites
       prisma.booking.count({
-        where: { userId: session.user.id },
+        where: { bookerId: session.user.id },
       }),
       // Trajets complétés
       prisma.trip.count({
@@ -74,7 +74,7 @@ export async function GET(request: Request) {
       // Réservations récentes
       prisma.booking.findMany({
         where: {
-          userId: session.user.id,
+          bookerId: session.user.id,
           createdAt: { gte: startDate },
         },
         orderBy: { createdAt: 'desc' },
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
       // Réservations durant la période
       prisma.booking.count({
         where: {
-          userId: session.user.id,
+          bookerId: session.user.id,
           createdAt: { gte: startDate },
         },
       }),
@@ -128,7 +128,7 @@ export async function GET(request: Request) {
         }),
         prisma.booking.count({
           where: {
-            userId: session.user.id,
+            bookerId: session.user.id,
             createdAt: {
               gte: date,
               lt: nextDate,
@@ -172,7 +172,7 @@ export async function GET(request: Request) {
     const bookingsByStatus = await prisma.booking.groupBy({
       by: ['status'],
       where: {
-        userId: session.user.id,
+        bookerId: session.user.id,
       },
       _count: {
         status: true,

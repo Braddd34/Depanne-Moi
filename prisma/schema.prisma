@@ -83,14 +83,14 @@ model Trip {
 model Booking {
   id        String        @id @default(cuid())
   tripId    String
-  userId    String        @map("bookerId")
+  bookerId  String
   status    BookingStatus @default(PENDING)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   // Relations
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  user User @relation("UserBookings", fields: [userId], references: [id], onDelete: Cascade)
+  trip   Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  booker User @relation("UserBookings", fields: [bookerId], references: [id], onDelete: Cascade)
 
   @@map("bookings")
 }
