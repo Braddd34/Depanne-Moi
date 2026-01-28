@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 /**
  * Page de simulation de vérification Didit (MODE TEST)
  * Cette page simule l'interface de Didit.me pour tester l'UX
  */
-export default function TestVerificationPage() {
+function TestVerificationContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -185,5 +185,20 @@ export default function TestVerificationPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function TestVerificationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <TestVerificationContent />
+    </Suspense>
   )
 }
