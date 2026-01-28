@@ -22,7 +22,8 @@
     "next-auth": "^4.24.5",
     "@prisma/client": "^5.9.1",
     "zod": "^3.22.4",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "resend": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

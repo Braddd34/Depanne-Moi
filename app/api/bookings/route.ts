@@ -109,7 +109,9 @@ export async function POST(request: Request) {
     try {
       const emailData = emailTemplates.newBooking(
         booking.trip,
-        booking.booker.name
+        booking.booker.name,
+        booking.booker.phone,
+        booking.booker.email || ''
       )
       await sendNotification({
         to: booking.trip.driver.email || '',
@@ -119,6 +121,23 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error('Error sending notification:', error)
       // Ne pas bloquer la réservation si l'email échoue
+    }
+
+    // Envoyer une confirmation au client
+    try {
+      const emailData = emailTemplates.bookingConfirmation(
+        booking.trip,
+        booking.trip.driver.name,
+        booking.trip.driver.phone,
+        booking.trip.driver.email || ''
+      )
+      await sendNotification({
+        to: booking.booker.email || '',
+        subject: emailData.subject,
+        message: emailData.message,
+      })
+    } catch (error) {
+      console.error('Error sending confirmation:', error)
     }
 
     return NextResponse.json({ booking }, { status: 201 })
