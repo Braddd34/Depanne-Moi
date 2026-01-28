@@ -26,17 +26,14 @@ interface ChatProps {
 export default function Chat({ conversationId, otherUser, currentUserId }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
-  const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (conversationId) {
-      fetchMessages()
-      // Rafraîchir les messages toutes les 3 secondes
-      const interval = setInterval(fetchMessages, 3000)
-      return () => clearInterval(interval)
-    }
+    fetchMessages()
+    // Rafraîchir toutes les 3 secondes
+    const interval = setInterval(fetchMessages, 3000)
+    return () => clearInterval(interval)
   }, [conversationId])
 
   useEffect(() => {
@@ -50,16 +47,10 @@ export default function Chat({ conversationId, otherUser, currentUserId }: ChatP
       setMessages(data)
     } catch (error) {
       console.error('Error fetching messages:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const handleSend = async (e: React.FormEvent) => {
+  const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || sending) return
 
@@ -68,20 +59,22 @@ export default function Chat({ conversationId, otherUser, currentUserId }: ChatP
       const res = await fetch(`/api/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newMessage }),
+        body: JSON.stringify({ content: newMessage.trim() }),
       })
 
       if (res.ok) {
-        const message = await res.json()
-        setMessages([...messages, message])
         setNewMessage('')
+        fetchMessages()
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      alert('Erreur lors de l\'envoi du message')
     } finally {
       setSending(false)
     }
+  }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const formatTime = (dateString: string) => {
@@ -93,76 +86,80 @@ export default function Chat({ conversationId, otherUser, currentUserId }: ChatP
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <>
       {/* Header */}
-      <div className="p-4 border-b-2 border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-            {otherUser.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900">{otherUser.name}</h3>
-            {otherUser.company && (
-              <p className="text-xs text-gray-500">{otherUser.company}</p>
-            )}
-          </div>
+      <div className="p-4 border-b-2 border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50 flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+          {otherUser.name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <h3 className="font-bold text-gray-900">{otherUser.name}</h3>
+          {otherUser.company && (
+            <p className="text-xs text-gray-500">{otherUser.company}</p>
+          )}
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {loading ? (
-          <div className="text-center py-8 text-gray-500">
-            <div className="spinner mx-auto mb-2"></div>
-            <p className="text-sm">Chargement des messages...</p>
-          </div>
-        ) : messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <div className="text-5xl mb-3">💬</div>
-            <p>Aucun message</p>
-            <p className="text-sm mt-2">Envoyez le premier message !</p>
+            <p>Aucun message pour le moment</p>
+            <p className="text-sm mt-2">
+              Commencez la conversation !
+            </p>
           </div>
         ) : (
-          messages.map((message) => {
-            const isSent = message.senderId === currentUserId
-            return (
-              <div
-                key={message.id}
-                className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`message-bubble ${isSent ? 'sent' : 'received'}`}>
-                  {!isSent && (
-                    <p className="text-xs font-semibold mb-1 opacity-70">
-                      {message.sender.name}
-                    </p>
+          <>
+            {messages.map((message, index) => {
+              const isSent = message.senderId === currentUserId
+              const showDate =
+                index === 0 ||
+                new Date(messages[index - 1].createdAt).toDateString() !==
+                  new Date(message.createdAt).toDateString()
+
+              return (
+                <div key={message.id}>
+                  {showDate && (
+                    <div className="text-center my-4">
+                      <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                        {new Date(message.createdAt).toLocaleDateString('fr-FR', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long',
+                        })}
+                      </span>
+                    </div>
                   )}
-                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      isSent ? 'text-white/70' : 'text-gray-500'
-                    }`}
-                  >
-                    {formatTime(message.createdAt)}
-                  </p>
+                  <div className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`message-bubble ${isSent ? 'sent' : 'received'}`}>
+                      <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          isSent ? 'text-purple-200' : 'text-gray-500'
+                        }`}
+                      >
+                        {formatTime(message.createdAt)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )
-          })
+              )
+            })}
+            <div ref={messagesEndRef} />
+          </>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <form
-        onSubmit={handleSend}
-        className="p-4 border-t-2 border-gray-200 bg-white"
-      >
-        <div className="flex gap-2">
+      <div className="p-4 border-t-2 border-gray-200 bg-white">
+        <form onSubmit={sendMessage} className="flex gap-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Tapez votre message..."
+            placeholder="Écrivez votre message..."
             className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
             disabled={sending}
           />
@@ -171,10 +168,10 @@ export default function Chat({ conversationId, otherUser, currentUserId }: ChatP
             disabled={!newMessage.trim() || sending}
             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {sending ? '📤' : '➤'}
+            {sending ? '...' : '📤'}
           </button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import UserNav from '@/components/UserNav'
 import Chat from '@/components/Chat'
 
@@ -22,7 +22,7 @@ interface Conversation {
   lastMessageAt: string
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -198,5 +198,22 @@ export default function MessagesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <div className="spinner mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <MessagesContent />
+    </Suspense>
   )
 }
