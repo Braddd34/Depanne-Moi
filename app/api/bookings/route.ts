@@ -83,6 +83,7 @@ export async function POST(request: Request) {
               select: {
                 id: true,
                 name: true,
+                email: true,
                 phone: true,
                 company: true,
               },
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
           select: {
             id: true,
             name: true,
+            email: true,
             phone: true,
           },
         },
