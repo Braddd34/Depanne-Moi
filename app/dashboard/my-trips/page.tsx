@@ -15,10 +15,10 @@ interface Trip {
   price: number
   status: string
   createdAt: string
-  bookings: Array<{
+  bookings: {
     id: string
     status: string
-  }>
+  }[]
 }
 
 export default function MyTripsPage() {
@@ -26,7 +26,6 @@ export default function MyTripsPage() {
   const router = useRouter()
   const [trips, setTrips] = useState<Trip[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -36,11 +35,11 @@ export default function MyTripsPage() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      fetchTrips()
+      fetchMyTrips()
     }
   }, [status])
 
-  const fetchTrips = async () => {
+  const fetchMyTrips = async () => {
     try {
       const res = await fetch(`/api/trips?driverId=${session?.user?.id}`)
       if (res.ok) {
@@ -54,8 +53,10 @@ export default function MyTripsPage() {
     }
   }
 
-  const handleDelete = async (tripId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) return
+  const deleteTrip = async (tripId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) {
+      return
+    }
 
     try {
       const res = await fetch(`/api/trips/${tripId}`, {
@@ -63,27 +64,35 @@ export default function MyTripsPage() {
       })
 
       if (res.ok) {
-        alert('Trajet supprimé')
-        fetchTrips()
+        alert('Trajet supprimé avec succès')
+        fetchMyTrips()
       } else {
         alert('Erreur lors de la suppression')
       }
     } catch (error) {
-      console.error('Delete error:', error)
+      console.error('Delete trip error:', error)
       alert('Erreur lors de la suppression')
     }
   }
 
-  const filteredTrips = trips.filter(trip => {
-    if (filter === 'all') return true
-    return trip.status === filter
-  })
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE': return 'bg-green-100 text-green-700'
+      case 'RESERVED': return 'bg-blue-100 text-blue-700'
+      case 'COMPLETED': return 'bg-gray-100 text-gray-700'
+      case 'CANCELLED': return 'bg-red-100 text-red-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
 
-  const stats = {
-    total: trips.length,
-    available: trips.filter(t => t.status === 'AVAILABLE').length,
-    reserved: trips.filter(t => t.status === 'RESERVED').length,
-    completed: trips.filter(t => t.status === 'COMPLETED').length,
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE': return '✅ Disponible'
+      case 'RESERVED': return '📋 Réservé'
+      case 'COMPLETED': return '✔️ Terminé'
+      case 'CANCELLED': return '❌ Annulé'
+      default: return status
+    }
   }
 
   if (status === 'loading' || loading) {
@@ -105,165 +114,94 @@ export default function MyTripsPage() {
               Mes <span className="text-gradient">Trajets</span> 🚚
             </h1>
             <p className="text-gray-500 text-lg">
-              Gérez tous vos trajets en un seul endroit
+              {trips.length} trajet{trips.length > 1 ? 's' : ''} créé{trips.length > 1 ? 's' : ''}
             </p>
           </div>
           <Link
             href="/dashboard/trips/new"
-            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
           >
-            ➕ Nouveau trajet
+            ➕ Créer un trajet
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="glass rounded-2xl p-6">
-            <div className="text-3xl mb-2">📊</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total</div>
-          </div>
-          <div className="glass rounded-2xl p-6">
-            <div className="text-3xl mb-2">✅</div>
-            <div className="text-3xl font-bold text-green-600">{stats.available}</div>
-            <div className="text-sm text-gray-600">Disponibles</div>
-          </div>
-          <div className="glass rounded-2xl p-6">
-            <div className="text-3xl mb-2">📋</div>
-            <div className="text-3xl font-bold text-blue-600">{stats.reserved}</div>
-            <div className="text-sm text-gray-600">Réservés</div>
-          </div>
-          <div className="glass rounded-2xl p-6">
-            <div className="text-3xl mb-2">🏁</div>
-            <div className="text-3xl font-bold text-purple-600">{stats.completed}</div>
-            <div className="text-sm text-gray-600">Terminés</div>
-          </div>
-        </div>
-
-        <div className="glass rounded-2xl p-4 mb-6">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Tous ({stats.total})
-            </button>
-            <button
-              onClick={() => setFilter('AVAILABLE')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'AVAILABLE'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Disponibles ({stats.available})
-            </button>
-            <button
-              onClick={() => setFilter('RESERVED')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'RESERVED'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Réservés ({stats.reserved})
-            </button>
-            <button
-              onClick={() => setFilter('COMPLETED')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'COMPLETED'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Terminés ({stats.completed})
-            </button>
-          </div>
-        </div>
-
-        {filteredTrips.length === 0 ? (
+        {trips.length === 0 ? (
           <div className="glass rounded-3xl p-12 text-center">
             <p className="text-6xl mb-4">🚚</p>
-            <p className="text-2xl font-bold text-gray-900 mb-2">Aucun trajet</p>
-            <p className="text-gray-600 mb-6">Créez votre premier trajet pour commencer</p>
+            <p className="text-2xl font-bold text-gray-900 mb-2">Aucun trajet créé</p>
+            <p className="text-gray-600 mb-6">Commencez par créer votre premier trajet</p>
             <Link
               href="/dashboard/trips/new"
-              className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
+              className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl font-bold hover:shadow-xl transition"
             >
               ➕ Créer un trajet
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredTrips.map((trip) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {trips.map((trip) => (
               <div key={trip.id} className="glass rounded-3xl p-6 hover-lift">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="text-3xl">🚚</div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gray-900">
-                          {trip.fromCity} → {trip.toCity}
-                        </h3>
-                        <div className="flex items-center gap-4 mt-1">
-                          <span className="text-sm text-gray-600">
-                            📅 {new Date(trip.date).toLocaleDateString('fr-FR')}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            🚗 {trip.vehicleType}
-                          </span>
-                          <span className="text-lg font-bold text-gradient">
-                            {trip.price}€
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex items-start justify-between mb-4">
+                  <span className={`px-3 py-1 rounded-xl text-sm font-bold ${getStatusColor(trip.status)}`}>
+                    {getStatusLabel(trip.status)}
+                  </span>
+                  <div className="text-2xl font-bold text-gradient">{trip.price}€</div>
+                </div>
 
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-4 py-2 rounded-xl font-bold text-sm ${
-                          trip.status === 'AVAILABLE'
-                            ? 'bg-green-100 text-green-700'
-                            : trip.status === 'RESERVED'
-                            ? 'bg-blue-100 text-blue-700'
-                            : trip.status === 'COMPLETED'
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {trip.status === 'AVAILABLE'
-                          ? '✅ Disponible'
-                          : trip.status === 'RESERVED'
-                          ? '📋 Réservé'
-                          : trip.status === 'COMPLETED'
-                          ? '🏁 Terminé'
-                          : '❌ Annulé'}
-                      </span>
-                      {trip.bookings.length > 0 && (
-                        <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-xl font-bold text-sm">
-                          {trip.bookings.length} réservation(s)
-                        </span>
-                      )}
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold">
+                      A
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Départ</div>
+                      <div className="font-bold text-gray-900">{trip.fromCity}</div>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/dashboard/trips/${trip.id}/edit`}
-                      className="px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-bold hover:bg-blue-200 transition text-sm"
-                    >
-                      ✏️ Modifier
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(trip.id)}
-                      className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition text-sm"
-                    >
-                      🗑️ Supprimer
-                    </button>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                      B
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Arrivée</div>
+                      <div className="font-bold text-gray-900">{trip.toCity}</div>
+                    </div>
                   </div>
+                </div>
+
+                <div className="border-t-2 border-gray-200 pt-4 mb-4 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">📅 Date</span>
+                    <span className="font-semibold text-gray-900">
+                      {new Date(trip.date).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">🚚 Véhicule</span>
+                    <span className="font-semibold text-gray-900">{trip.vehicleType}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">📋 Réservations</span>
+                    <span className="font-semibold text-gray-900">
+                      {trip.bookings.filter(b => b.status === 'CONFIRMED').length} confirmée{trip.bookings.filter(b => b.status === 'CONFIRMED').length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Link
+                    href={`/dashboard/trips/${trip.id}/edit`}
+                    className="flex-1 py-2 bg-blue-100 text-blue-700 rounded-xl font-bold hover:bg-blue-200 transition text-center text-sm"
+                  >
+                    ✏️ Modifier
+                  </Link>
+                  <button
+                    onClick={() => deleteTrip(trip.id)}
+                    className="flex-1 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition text-sm"
+                  >
+                    🗑️ Supprimer
+                  </button>
                 </div>
               </div>
             ))}

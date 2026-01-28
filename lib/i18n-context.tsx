@@ -10,6 +10,7 @@ interface I18nContextType {
   t: (key: string) => string
   currency: string
   currencySymbol: string
+  localeNames: Record<string, string>
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
@@ -26,6 +27,13 @@ const currencyMap: Record<Locale, { symbol: string; code: string }> = {
   en: { symbol: '£', code: 'GBP' },
   es: { symbol: '€', code: 'EUR' },
   it: { symbol: '€', code: 'EUR' },
+}
+
+const localeNames: Record<string, string> = {
+  fr: 'Français',
+  en: 'English',
+  es: 'Español',
+  it: 'Italiano',
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
@@ -68,6 +76,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     t,
     currency: currencyMap[locale].code,
     currencySymbol: currencyMap[locale].symbol,
+    localeNames,
   }
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>

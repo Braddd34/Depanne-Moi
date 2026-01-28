@@ -31,7 +31,6 @@ export default function BookingsPage() {
   const router = useRouter()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -59,8 +58,10 @@ export default function BookingsPage() {
     }
   }
 
-  const handleCancel = async (bookingId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) return
+  const cancelBooking = async (bookingId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+      return
+    }
 
     try {
       const res = await fetch(`/api/bookings/${bookingId}`, {
@@ -74,21 +75,27 @@ export default function BookingsPage() {
         alert('Erreur lors de l\'annulation')
       }
     } catch (error) {
-      console.error('Cancel error:', error)
+      console.error('Cancel booking error:', error)
       alert('Erreur lors de l\'annulation')
     }
   }
 
-  const filteredBookings = bookings.filter(booking => {
-    if (filter === 'all') return true
-    return booking.status === filter
-  })
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'bg-yellow-100 text-yellow-700'
+      case 'CONFIRMED': return 'bg-green-100 text-green-700'
+      case 'CANCELLED': return 'bg-red-100 text-red-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
 
-  const stats = {
-    total: bookings.length,
-    pending: bookings.filter(b => b.status === 'PENDING').length,
-    confirmed: bookings.filter(b => b.status === 'CONFIRMED').length,
-    cancelled: bookings.filter(b => b.status === 'CANCELLED').length,
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PENDING': return '⏳ En attente'
+      case 'CONFIRMED': return '✅ Confirmé'
+      case 'CANCELLED': return '❌ Annulé'
+      default: return status
+    }
   }
 
   if (status === 'loading' || loading) {
@@ -98,6 +105,10 @@ export default function BookingsPage() {
       </div>
     )
   }
+
+  const pendingBookings = bookings.filter(b => b.status === 'PENDING')
+  const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED')
+  const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED')
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
@@ -109,156 +120,98 @@ export default function BookingsPage() {
             Mes <span className="text-gradient">Réservations</span> 📋
           </h1>
           <p className="text-gray-500 text-lg">
-            Suivez toutes vos demandes de transport
+            {bookings.length} réservation{bookings.length > 1 ? 's' : ''}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="glass rounded-2xl p-6">
-            <div className="text-3xl mb-2">📊</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total</div>
-          </div>
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">⏳</div>
-            <div className="text-3xl font-bold text-orange-600">{stats.pending}</div>
+            <div className="text-3xl font-bold text-yellow-600">{pendingBookings.length}</div>
             <div className="text-sm text-gray-600">En attente</div>
           </div>
           <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">✅</div>
-            <div className="text-3xl font-bold text-green-600">{stats.confirmed}</div>
+            <div className="text-3xl font-bold text-green-600">{confirmedBookings.length}</div>
             <div className="text-sm text-gray-600">Confirmées</div>
           </div>
           <div className="glass rounded-2xl p-6">
             <div className="text-3xl mb-2">❌</div>
-            <div className="text-3xl font-bold text-red-600">{stats.cancelled}</div>
+            <div className="text-3xl font-bold text-red-600">{cancelledBookings.length}</div>
             <div className="text-sm text-gray-600">Annulées</div>
           </div>
         </div>
 
-        <div className="glass rounded-2xl p-4 mb-6">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Toutes ({stats.total})
-            </button>
-            <button
-              onClick={() => setFilter('PENDING')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'PENDING'
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              En attente ({stats.pending})
-            </button>
-            <button
-              onClick={() => setFilter('CONFIRMED')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'CONFIRMED'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Confirmées ({stats.confirmed})
-            </button>
-            <button
-              onClick={() => setFilter('CANCELLED')}
-              className={`px-4 py-2 rounded-xl font-semibold transition ${
-                filter === 'CANCELLED'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Annulées ({stats.cancelled})
-            </button>
-          </div>
-        </div>
-
-        {filteredBookings.length === 0 ? (
+        {bookings.length === 0 ? (
           <div className="glass rounded-3xl p-12 text-center">
             <p className="text-6xl mb-4">📋</p>
             <p className="text-2xl font-bold text-gray-900 mb-2">Aucune réservation</p>
-            <p className="text-gray-600">Explorez les trajets disponibles pour réserver</p>
+            <p className="text-gray-600">Explorez les trajets disponibles pour en réserver un</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredBookings.map((booking) => (
+          <div className="space-y-6">
+            {bookings.map((booking) => (
               <div key={booking.id} className="glass rounded-3xl p-6 hover-lift">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-4 py-2 rounded-xl font-bold text-sm ${
-                        booking.status === 'PENDING'
-                          ? 'bg-orange-100 text-orange-700'
-                          : booking.status === 'CONFIRMED'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {booking.status === 'PENDING'
-                        ? '⏳ En attente'
-                        : booking.status === 'CONFIRMED'
-                        ? '✅ Confirmée'
-                        : '❌ Annulée'}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      Réservé le {new Date(booking.createdAt).toLocaleDateString('fr-FR')}
-                    </span>
-                  </div>
+                  <span className={`px-3 py-1 rounded-xl text-sm font-bold ${getStatusColor(booking.status)}`}>
+                    {getStatusLabel(booking.status)}
+                  </span>
                   <div className="text-2xl font-bold text-gradient">{booking.trip.price}€</div>
                 </div>
 
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold">
-                      A
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold">
+                        A
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Départ</div>
+                        <div className="font-bold text-gray-900">{booking.trip.fromCity}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Départ</div>
-                      <div className="font-bold text-gray-900">{booking.trip.fromCity}</div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                        B
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Arrivée</div>
+                        <div className="font-bold text-gray-900">{booking.trip.toCity}</div>
+                      </div>
+                    </div>
+
+                    <div className="text-sm text-gray-600">
+                      📅 {new Date(booking.trip.date).toLocaleDateString('fr-FR')}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      🚚 {booking.trip.vehicleType}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
-                      B
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Arrivée</div>
-                      <div className="font-bold text-gray-900">{booking.trip.toCity}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t-2 border-gray-200 pt-4 mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">👤</span>
-                    <div>
-                      <div className="font-bold text-gray-900">{booking.trip.driver.name}</div>
+                  <div className="border-l-2 border-gray-200 pl-6">
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 mb-1">Transporteur</p>
+                      <p className="font-bold text-gray-900">{booking.trip.driver.name}</p>
                       {booking.trip.driver.company && (
-                        <div className="text-sm text-gray-600">{booking.trip.driver.company}</div>
+                        <p className="text-sm text-gray-600">{booking.trip.driver.company}</p>
                       )}
+                      <p className="text-sm text-gray-600">📱 {booking.trip.driver.phone}</p>
                     </div>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    📱 {booking.trip.driver.phone} · 📅 {new Date(booking.trip.date).toLocaleDateString('fr-FR')} · 🚗 {booking.trip.vehicleType}
+
+                    <div className="text-xs text-gray-500">
+                      Réservé le {new Date(booking.createdAt).toLocaleDateString('fr-FR')}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-6 pt-4 border-t-2 border-gray-200">
                   {booking.status === 'CONFIRMED' && (
-                    <InvoiceButton type="booking" id={booking.id} />
+                    <InvoiceButton type="booking" id={booking.id} label="Télécharger facture" />
                   )}
                   {booking.status === 'PENDING' && (
                     <button
-                      onClick={() => handleCancel(booking.id)}
+                      onClick={() => cancelBooking(booking.id)}
                       className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition text-sm"
                     >
                       ❌ Annuler
