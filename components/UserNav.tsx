@@ -1,83 +1,97 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+
+const navLinks = [
+  { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
+  { href: '/dashboard/explore', label: 'Explorer', icon: '🔍' },
+  { href: '/dashboard/my-trips', label: 'Mes trajets', icon: '🚚' },
+  { href: '/dashboard/bookings', label: 'Réservations', icon: '📋' },
+  { href: '/dashboard/analytics', label: 'Analytics', icon: '📊' },
+  { href: '/dashboard/history', label: 'Historique', icon: '📚' },
+  { href: '/dashboard/manage-bookings', label: 'Gérer réservations', icon: '✅' },
+  { href: '/dashboard/map', label: 'Carte', icon: '🗺️' },
+  { href: '/dashboard/profile', label: 'Profil', icon: '👤' },
+]
 
 export default function UserNav() {
-  const { data: session } = useSession()
   const pathname = usePathname()
-
-  const navItems = [
-    { href: '/dashboard', label: 'Accueil', icon: '🏠' },
-    { href: '/dashboard/explore', label: 'Trajets disponibles', icon: '🔍' },
-    { href: '/dashboard/map', label: 'Carte', icon: '🗺️' },
-    { href: '/dashboard/my-trips', label: 'Mes trajets', icon: '🚚' },
-    { href: '/dashboard/my-bookings', label: 'Mes réservations', icon: '📋' },
-    { href: '/dashboard/manage-bookings', label: 'Gérer réservations', icon: '✅' },
-    { href: '/dashboard/history', label: 'Historique', icon: '📚' },
-    { href: '/dashboard/verification', label: 'Vérification', icon: '🔒' },
-    { href: '/dashboard/profile', label: 'Profil', icon: '👤' },
-  ]
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
+    <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-blue-600">🚚 Depanne Moi</span>
+          <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center text-white">
+              🚚
+            </div>
+            <span className="hidden sm:block text-gradient">Depanne Moi</span>
           </Link>
 
-          {/* Navigation desktop */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
               <Link
-                key={item.href}
-                href={item.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  pathname === item.href
-                    ? 'bg-blue-600 text-white'
+                key={link.href}
+                href={link.href}
+                className={`px-4 py-2 rounded-xl font-semibold transition ${
+                  pathname === link.href
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <span className="mr-2">{item.icon}</span>
-                {item.label}
+                <span className="mr-1">{link.icon}</span>
+                <span className="hidden xl:inline">{link.label}</span>
               </Link>
             ))}
           </div>
 
-          {/* User menu */}
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600 hidden md:block">
-              {session?.user?.name}
-            </span>
+          {/* Actions */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors"
+              className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-semibold hover:bg-red-200 transition"
             >
-              Déconnexion
+              🚪 Déconnexion
+            </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-gray-700"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
             </button>
           </div>
         </div>
 
-        {/* Navigation mobile */}
-        <div className="md:hidden flex overflow-x-auto pb-2 space-x-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap ${
-                pathname === item.href
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              <span className="mr-1">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden pb-4">
+            <div className="flex flex-col gap-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-4 py-3 rounded-xl font-semibold transition ${
+                    pathname === link.href
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <span className="mr-2">{link.icon}</span>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )
