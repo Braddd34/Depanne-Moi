@@ -28,7 +28,7 @@ export default function LanguageSelector() {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 mt-2 w-48 glass rounded-2xl shadow-xl z-20 overflow-hidden">
-            {Object.keys(localeNames).map((loc) => (
+            {(Object.keys(localeNames) as Array<keyof typeof localeNames>).map((loc) => (
               <button
                 key={loc}
                 onClick={() => {
