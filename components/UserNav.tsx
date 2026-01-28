@@ -14,6 +14,7 @@ export default function UserNav() {
     { href: '/dashboard/my-trips', label: 'Mes trajets', icon: '🚚' },
     { href: '/dashboard/my-bookings', label: 'Mes réservations', icon: '📋' },
     { href: '/dashboard/manage-bookings', label: 'Gérer réservations', icon: '✅' },
+    { href: '/dashboard/history', label: 'Historique', icon: '📚' },
     { href: '/dashboard/verification', label: 'Vérification', icon: '🔒' },
     { href: '/dashboard/profile', label: 'Profil', icon: '👤' },
   ]
