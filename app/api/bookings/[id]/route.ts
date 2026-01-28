@@ -68,7 +68,7 @@ export async function PATCH(
     if (status === 'CONFIRMED') {
       await prisma.trip.update({
         where: { id: booking.tripId },
-        data: { status: 'BOOKED' },
+        data: { status: 'RESERVED' },
       })
 
       await prisma.notification.create({
