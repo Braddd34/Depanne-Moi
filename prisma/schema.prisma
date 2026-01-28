@@ -23,13 +23,41 @@ model User {
   acceptedTerms    Boolean  @default(false) // Acceptation des CGU et politique de confidentialité
   acceptedTermsAt  DateTime? // Date d'acceptation des CGU
   
+  // Vérification d'identité (Didit.me)
+  isVerified          Boolean  @default(false)      // Identité vérifiée
+  identityVerifiedAt  DateTime?                    // Date de vérification identité
+  driverLicenseVerified Boolean @default(false)    // Permis vérifié
+  businessVerified    Boolean  @default(false)      // KBIS vérifié (entreprise)
+  verificationLevel   VerificationLevel @default(NONE) // Niveau de vérification
+  diditSessionId      String?                      // ID session Didit.me
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   trips     Trip[]
   bookings  Booking[]
+  verificationSessions VerificationSession[]
   
   @@map("users")
+}
+
+model VerificationSession {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  sessionId       String   @unique  // ID session Didit.me
+  sessionUrl      String              // URL de vérification Didit
+  verificationType String              // "identity", "driver_license", "business"
+  
+  status          VerificationStatus @default(PENDING)
+  result          Json?                // Résultats Didit (JSON)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+  
+  @@map("verification_sessions")
 }
 
 model Trip {
@@ -85,4 +113,20 @@ enum BookingStatus {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum VerificationLevel {
+  NONE           // Pas encore vérifié
+  IDENTITY       // Identité vérifiée (CNI/Passeport)
+  DRIVER         // Identité + Permis
+  BUSINESS       // Identité + KBIS (entreprise)
+  FULL           // Identité + Permis + KBIS
+}
+
+enum VerificationStatus {
+  PENDING        // En attente
+  IN_PROGRESS    // En cours
+  COMPLETED      // Terminée avec succès
+  FAILED         // Échec
+  EXPIRED        // Session expirée
 }

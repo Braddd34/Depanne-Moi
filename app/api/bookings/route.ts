@@ -24,6 +24,26 @@ export async function POST(request: Request) {
       )
     }
 
+    // Vérifier que l'utilisateur est vérifié
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        isVerified: true,
+        verificationLevel: true,
+      },
+    })
+
+    if (!user?.isVerified) {
+      return NextResponse.json(
+        {
+          error: 'Vérification d\'identité requise',
+          message: 'Vous devez vérifier votre identité avant de réserver un trajet',
+          redirect: '/dashboard/verification',
+        },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const data = createBookingSchema.parse(body)
 

@@ -93,6 +93,38 @@ export async function POST(request: Request) {
       )
     }
 
+    // Vérifier que l'utilisateur est vérifié
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        isVerified: true,
+        driverLicenseVerified: true,
+        verificationLevel: true,
+      },
+    })
+
+    if (!user?.isVerified) {
+      return NextResponse.json(
+        {
+          error: 'Vérification d\'identité requise',
+          message: 'Vous devez vérifier votre identité avant de publier un trajet',
+          redirect: '/dashboard/verification',
+        },
+        { status: 403 }
+      )
+    }
+
+    if (!user.driverLicenseVerified && !user.isVerified) {
+      return NextResponse.json(
+        {
+          error: 'Permis de conduire requis',
+          message: 'Vous devez vérifier votre permis de conduire pour publier un trajet',
+          redirect: '/dashboard/verification',
+        },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const data = createTripSchema.parse(body)
 
