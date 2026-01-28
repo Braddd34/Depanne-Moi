@@ -1,0 +1,109 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "print": "Imprimir"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "explore": "Explorar",
+    "myTrips": "Mis viajes",
+    "bookings": "Reservas",
+    "analytics": "Analíticas",
+    "history": "Historial",
+    "manageBookings": "Gestionar reservas",
+    "map": "Mapa",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "¡Bienvenido! Inicia sesión en tu cuenta",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión",
+      "noAccount": "¿No tienes una cuenta?",
+      "signupLink": "Regístrate gratis"
+    },
+    "register": {
+      "title": "Crear una cuenta",
+      "subtitle": "Únete a la comunidad Depanne Moi",
+      "name": "Nombre completo",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "password": "Contraseña",
+      "company": "Empresa",
+      "vehicleType": "Tipo de vehículo",
+      "submit": "Crear mi cuenta",
+      "hasAccount": "¿Ya tienes una cuenta?",
+      "loginLink": "Iniciar sesión",
+      "terms": "He leído y acepto los Términos y Condiciones y la Política de Privacidad",
+      "gdpr": "Tus datos se procesan de acuerdo con el RGPD."
+    }
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "stats": {
+      "totalTrips": "Viajes creados",
+      "completedTrips": "Viajes completados",
+      "totalBookings": "Reservas realizadas",
+      "totalRevenue": "Ingresos totales",
+      "averagePrice": "Precio medio / viaje",
+      "totalActivities": "Actividades totales"
+    }
+  },
+  "trips": {
+    "title": "Mis viajes",
+    "create": "Publicar un viaje",
+    "from": "Desde",
+    "to": "Hasta",
+    "date": "Fecha",
+    "price": "Precio",
+    "vehicleType": "Tipo de vehículo",
+    "status": {
+      "available": "Disponible",
+      "reserved": "Reservado",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    }
+  },
+  "analytics": {
+    "title": "Analíticas y Estadísticas",
+    "subtitle": "Sigue tu rendimiento y actividad",
+    "period": "Período",
+    "periods": {
+      "7days": "7 días",
+      "30days": "30 días",
+      "3months": "3 meses",
+      "1year": "1 año"
+    },
+    "charts": {
+      "evolution": "Evolución de la actividad",
+      "revenue": "Ingresos por día",
+      "tripsByStatus": "Viajes por estado",
+      "bookingsByStatus": "Reservas por estado"
+    }
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "subtitle": "Gestiona tu información y consulta tu reputación",
+    "personalInfo": "Información personal",
+    "reviews": "Reseñas recibidas",
+    "noReviews": "Aún no has recibido reseñas"
+  }
+}

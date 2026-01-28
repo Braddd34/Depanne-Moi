@@ -1,0 +1,109 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "print": "Print"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "explore": "Explore",
+    "myTrips": "My trips",
+    "bookings": "Bookings",
+    "analytics": "Analytics",
+    "history": "History",
+    "manageBookings": "Manage bookings",
+    "map": "Map",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Sign up"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Welcome! Log in to your account",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Log in",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up for free"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Join the Depanne Moi community",
+      "name": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "company": "Company",
+      "vehicleType": "Vehicle type",
+      "submit": "Create my account",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "terms": "I have read and accept the Terms & Conditions and Privacy Policy",
+      "gdpr": "Your data is processed in accordance with GDPR."
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "stats": {
+      "totalTrips": "Trips created",
+      "completedTrips": "Completed trips",
+      "totalBookings": "Bookings made",
+      "totalRevenue": "Total revenue",
+      "averagePrice": "Average price / trip",
+      "totalActivities": "Total activities"
+    }
+  },
+  "trips": {
+    "title": "My trips",
+    "create": "Post a trip",
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "price": "Price",
+    "vehicleType": "Vehicle type",
+    "status": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "analytics": {
+    "title": "Analytics & Stats",
+    "subtitle": "Track your performance and activity",
+    "period": "Period",
+    "periods": {
+      "7days": "7 days",
+      "30days": "30 days",
+      "3months": "3 months",
+      "1year": "1 year"
+    },
+    "charts": {
+      "evolution": "Activity evolution",
+      "revenue": "Revenue per day",
+      "tripsByStatus": "Trips by status",
+      "bookingsByStatus": "Bookings by status"
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Manage your information and check your reputation",
+    "personalInfo": "Personal information",
+    "reviews": "Reviews received",
+    "noReviews": "You haven't received any reviews yet"
+  }
+}

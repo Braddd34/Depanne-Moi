@@ -1,0 +1,109 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "print": "Imprimer"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "explore": "Explorer",
+    "myTrips": "Mes trajets",
+    "bookings": "Réservations",
+    "analytics": "Analytics",
+    "history": "Historique",
+    "manageBookings": "Gérer réservations",
+    "map": "Carte",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "Inscription"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Bienvenue ! Connectez-vous à votre compte",
+      "email": "Adresse email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "noAccount": "Pas encore de compte ?",
+      "signupLink": "S'inscrire gratuitement"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez la communauté Depanne Moi",
+      "name": "Nom complet",
+      "email": "Email",
+      "phone": "Téléphone",
+      "password": "Mot de passe",
+      "company": "Société",
+      "vehicleType": "Type de véhicule",
+      "submit": "Créer mon compte",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Se connecter",
+      "terms": "J'ai lu et j'accepte les CGU et la Politique de Confidentialité",
+      "gdpr": "Vos données sont traitées conformément au RGPD."
+    }
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "stats": {
+      "totalTrips": "Trajets créés",
+      "completedTrips": "Trajets complétés",
+      "totalBookings": "Réservations faites",
+      "totalRevenue": "Revenus totaux",
+      "averagePrice": "Prix moyen / trajet",
+      "totalActivities": "Activités totales"
+    }
+  },
+  "trips": {
+    "title": "Mes trajets",
+    "create": "Publier un trajet",
+    "from": "De",
+    "to": "À",
+    "date": "Date",
+    "price": "Prix",
+    "vehicleType": "Type de véhicule",
+    "status": {
+      "available": "Disponible",
+      "reserved": "Réservé",
+      "completed": "Complété",
+      "cancelled": "Annulé"
+    }
+  },
+  "analytics": {
+    "title": "Analytics & Stats",
+    "subtitle": "Suivez vos performances et votre activité",
+    "period": "Période",
+    "periods": {
+      "7days": "7 jours",
+      "30days": "30 jours",
+      "3months": "3 mois",
+      "1year": "1 an"
+    },
+    "charts": {
+      "evolution": "Évolution de l'activité",
+      "revenue": "Revenus par jour",
+      "tripsByStatus": "Trajets par statut",
+      "bookingsByStatus": "Réservations par statut"
+    }
+  },
+  "profile": {
+    "title": "Mon profil",
+    "subtitle": "Gérez vos informations et consultez votre réputation",
+    "personalInfo": "Informations personnelles",
+    "reviews": "Avis reçus",
+    "noReviews": "Vous n'avez pas encore reçu d'avis"
+  }
+}

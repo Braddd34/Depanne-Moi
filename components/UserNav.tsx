@@ -4,6 +4,8 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useI18n } from '@/lib/i18n-context'
+import LanguageSelector from './LanguageSelector'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -20,6 +22,7 @@ const navLinks = [
 export default function UserNav() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { t } = useI18n()
 
   return (
     <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50">
@@ -53,11 +56,12 @@ export default function UserNav() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
               className="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-semibold hover:bg-red-200 transition"
             >
-              🚪 Déconnexion
+              🚪 {t('nav.logout')}
             </button>
 
             {/* Mobile Menu Button */}
