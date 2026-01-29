@@ -2,43 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 
-// Fix pour les icônes Leaflet avec Next.js
-const icon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+const MapInner = dynamic(() => import('./MapInner'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[600px] flex items-center justify-center bg-gray-100 rounded-3xl">
+      <div className="text-center">
+        <div className="spinner mb-4"></div>
+        <p className="text-gray-600 font-semibold">Chargement de la carte...</p>
+      </div>
+    </div>
+  ),
 })
-
-L.Marker.prototype.options.icon = icon
-
-// Import dynamique pour éviter les erreurs SSR
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-)
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-)
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-)
-const Popup = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
-  { ssr: false }
-)
-const Polyline = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Polyline),
-  { ssr: false }
-)
 
 interface Trip {
   id: string
@@ -66,7 +41,12 @@ interface CityCoords {
   lon: number
 }
 
-const FRANCE_CENTER: [number, number] = [46.603354, 1.888334]
+interface TripWithCoords {
+  trip: Trip
+  fromCoords: CityCoords
+  toCoords: CityCoords
+  route: [number, number][]
+}
 
 // Cache pour éviter de géocoder plusieurs fois la même ville
 const coordsCache: Record<string, CityCoords> = {}
@@ -92,7 +72,12 @@ async function geocodeCity(city: string): Promise<CityCoords | null> {
   
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=France&format=json&limit=1`
+      `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=France&format=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'DepanneMoi/1.0'
+        }
+      }
     )
     const data = await response.json()
     
@@ -137,30 +122,22 @@ async function getRoute(from: CityCoords, to: CityCoords): Promise<[number, numb
 }
 
 export default function OpenFreeMapComponent({ trips, onTripClick, selectedTripId }: OpenFreeMapComponentProps) {
-  const [mapReady, setMapReady] = useState(false)
-  const [tripsWithCoords, setTripsWithCoords] = useState<Array<{
-    trip: Trip
-    fromCoords: CityCoords
-    toCoords: CityCoords
-    route: [number, number][]
-  }>>([])
+  const [tripsWithCoords, setTripsWithCoords] = useState<TripWithCoords[]>([])
   const [loading, setLoading] = useState(true)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
 
   useEffect(() => {
-    setMapReady(true)
-  }, [])
-
-  useEffect(() => {
-    if (mapReady && trips.length > 0) {
+    if (trips.length > 0) {
       loadTripsWithCoords()
+    } else {
+      setLoading(false)
     }
-  }, [mapReady, trips])
+  }, [trips])
 
   const loadTripsWithCoords = async () => {
     setLoading(true)
     setProgress({ current: 0, total: trips.length })
-    const results = []
+    const results: TripWithCoords[] = []
 
     for (let i = 0; i < trips.length; i++) {
       const trip = trips[i]
@@ -184,105 +161,47 @@ export default function OpenFreeMapComponent({ trips, onTripClick, selectedTripI
     setLoading(false)
   }
 
-  if (!mapReady) {
+  if (loading && trips.length > 0) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-100">
-        <div className="spinner"></div>
+      <div className="h-[600px] flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl">
+        <div className="text-center">
+          <div className="spinner mb-4"></div>
+          <p className="font-bold text-gray-900 text-lg mb-2">
+            Chargement des trajets sur la carte...
+          </p>
+          <p className="text-gray-600">
+            {progress.current}/{progress.total} trajets chargés
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (tripsWithCoords.length === 0) {
+    return (
+      <div className="h-[600px] flex items-center justify-center bg-gray-100 rounded-3xl">
+        <div className="text-center">
+          <p className="text-6xl mb-4">🗺️</p>
+          <p className="text-xl font-bold text-gray-900 mb-2">Aucun trajet à afficher</p>
+          <p className="text-gray-600">Les trajets apparaîtront ici quand ils seront disponibles</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="relative h-full">
-      {loading && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] glass px-6 py-3 rounded-2xl shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="spinner"></div>
-            <span className="font-bold text-gray-900">
-              Chargement des trajets... {progress.current}/{progress.total}
-            </span>
-          </div>
-        </div>
-      )}
+    <div className="relative h-full min-h-[600px]">
+      <MapInner
+        tripsWithCoords={tripsWithCoords}
+        onTripClick={onTripClick}
+        selectedTripId={selectedTripId}
+      />
 
-      <MapContainer
-        center={FRANCE_CENTER}
-        zoom={6}
-        style={{ height: '100%', width: '100%' }}
-        className="rounded-3xl overflow-hidden"
-      >
-        {/* OpenFreeMap tiles via LFMaps CDN */}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | <a href="https://openfreemap.org">OpenFreeMap</a>'
-          url="https://{s}.lfmaps.fr/openfreemap/positron/{z}/{x}/{y}.png"
-          subdomains={['a', 'b', 'c']}
-        />
-
-        {tripsWithCoords.map(({ trip, fromCoords, toCoords, route }, index) => {
-          const isSelected = trip.id === selectedTripId
-
-          return (
-            <>
-              {/* Itinéraire */}
-              <Polyline
-                key={`route-${trip.id}`}
-                positions={route}
-                color={isSelected ? '#9333ea' : '#3b82f6'}
-                weight={isSelected ? 4 : 3}
-                opacity={isSelected ? 0.8 : 0.6}
-              />
-
-              {/* Marker départ (A) */}
-              <Marker
-                key={`from-${trip.id}`}
-                position={[fromCoords.lat, fromCoords.lon]}
-                eventHandlers={{
-                  click: () => onTripClick && onTripClick(trip),
-                }}
-              >
-                <Popup>
-                  <div className="p-2">
-                    <div className="font-bold text-green-600 mb-1">🟢 Départ</div>
-                    <div className="font-bold text-lg">{trip.fromCity}</div>
-                    <div className="text-sm text-gray-600">{trip.vehicleType}</div>
-                    <div className="text-sm text-gray-600">
-                      {new Date(trip.date).toLocaleDateString('fr-FR')}
-                    </div>
-                    <div className="font-bold text-purple-600 mt-2">{trip.price}€</div>
-                    <div className="text-xs text-gray-500 mt-1">👤 {trip.driver.name}</div>
-                  </div>
-                </Popup>
-              </Marker>
-
-              {/* Marker arrivée (B) */}
-              <Marker
-                key={`to-${trip.id}`}
-                position={[toCoords.lat, toCoords.lon]}
-                eventHandlers={{
-                  click: () => onTripClick && onTripClick(trip),
-                }}
-              >
-                <Popup>
-                  <div className="p-2">
-                    <div className="font-bold text-purple-600 mb-1">🔵 Arrivée</div>
-                    <div className="font-bold text-lg">{trip.toCity}</div>
-                    <div className="text-sm text-gray-600">{trip.fromCity} → {trip.toCity}</div>
-                    <div className="font-bold text-purple-600 mt-2">{trip.price}€</div>
-                  </div>
-                </Popup>
-              </Marker>
-            </>
-          )
-        })}
-      </MapContainer>
-
-      {!loading && tripsWithCoords.length > 0 && (
-        <div className="absolute bottom-4 left-4 z-[1000] glass px-4 py-2 rounded-xl shadow-xl">
-          <span className="text-sm font-bold text-gray-900">
-            🗺️ {tripsWithCoords.length} trajet{tripsWithCoords.length > 1 ? 's' : ''} affiché{tripsWithCoords.length > 1 ? 's' : ''}
-          </span>
-        </div>
-      )}
+      <div className="absolute bottom-4 left-4 z-[1000] glass px-4 py-2 rounded-xl shadow-xl">
+        <span className="text-sm font-bold text-gray-900">
+          🗺️ {tripsWithCoords.length} trajet{tripsWithCoords.length > 1 ? 's' : ''} affiché{tripsWithCoords.length > 1 ? 's' : ''}
+        </span>
+      </div>
     </div>
   )
 }
