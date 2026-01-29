@@ -32,6 +32,7 @@ interface Trip {
   date: string
   vehicleType: string
   price: number
+  status: string
   driver: {
     id: string
     name: string
