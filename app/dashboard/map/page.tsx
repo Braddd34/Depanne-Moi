@@ -219,9 +219,17 @@ export default function MapPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Carte */}
             <div className="lg:col-span-2">
-              <div className="glass rounded-3xl p-4 h-[700px]">
+              <div className="glass rounded-3xl p-4 h-[700px] relative">
+                {selectedTrip && (
+                  <button
+                    onClick={() => setSelectedTrip(null)}
+                    className="absolute top-8 left-8 z-[1001] px-4 py-2 bg-white hover:bg-gray-100 text-gray-900 rounded-xl font-bold shadow-xl transition flex items-center gap-2"
+                  >
+                    ← Voir tous les trajets
+                  </button>
+                )}
                 <OpenFreeMapComponent
-                  trips={filteredTrips}
+                  trips={selectedTrip ? [selectedTrip] : filteredTrips}
                   onTripClick={setSelectedTrip}
                   selectedTripId={selectedTrip?.id}
                 />
