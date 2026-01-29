@@ -1,0 +1,179 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import UserNav from '@/components/UserNav'
+
+export default function NewTripPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    fromCity: '',
+    toCity: '',
+    date: '',
+    vehicleType: 'Camion',
+    price: '',
+  })
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login')
+    }
+  }, [status, router])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+        }),
+      })
+
+      if (res.ok) {
+        alert('Trajet créé avec succès !')
+        router.push('/dashboard/my-trips')
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Erreur lors de la création')
+      }
+    } catch (error) {
+      console.error('Create trip error:', error)
+      alert('Erreur lors de la création')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="spinner"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
+      <UserNav />
+
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="mb-8 fade-in">
+          <h1 className="text-5xl font-bold text-gray-900 mb-2">
+            <span className="text-gradient">Créer</span> un trajet 🚚
+          </h1>
+          <p className="text-gray-500 text-lg">Publiez un nouveau trajet disponible</p>
+        </div>
+
+        <div className="glass rounded-3xl p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  📍 Ville de départ *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.fromCity}
+                  onChange={(e) => setFormData({ ...formData, fromCity: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                  placeholder="Ex: Paris"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  🎯 Ville d'arrivée *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.toCity}
+                  onChange={(e) => setFormData({ ...formData, toCity: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                  placeholder="Ex: Lyon"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  📅 Date du trajet *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  💰 Prix (€) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                  placeholder="Ex: 150"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                🚚 Type de véhicule *
+              </label>
+              <select
+                required
+                value={formData.vehicleType}
+                onChange={(e) => setFormData({ ...formData, vehicleType: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              >
+                <option value="Camion">Camion</option>
+                <option value="Camionnette">Camionnette</option>
+                <option value="Voiture">Voiture</option>
+                <option value="Dépanneuse">Dépanneuse</option>
+                <option value="Fourgon">Fourgon</option>
+                <option value="Utilitaire">Utilitaire</option>
+              </select>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex-1 px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 transition text-lg"
+              >
+                ← Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl font-bold hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition text-lg"
+              >
+                {loading ? '🔄 Création...' : '✅ Créer le trajet'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
