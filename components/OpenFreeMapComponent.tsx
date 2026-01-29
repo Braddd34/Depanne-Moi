@@ -222,9 +222,10 @@ export default function OpenFreeMapComponent({ trips, onTripClick, selectedTripI
           const isSelected = trip.id === selectedTripId
 
           return (
-            <div key={trip.id}>
+            <>
               {/* Itinéraire */}
               <Polyline
+                key={`route-${trip.id}`}
                 positions={route}
                 color={isSelected ? '#9333ea' : '#3b82f6'}
                 weight={isSelected ? 4 : 3}
@@ -233,6 +234,7 @@ export default function OpenFreeMapComponent({ trips, onTripClick, selectedTripI
 
               {/* Marker départ (A) */}
               <Marker
+                key={`from-${trip.id}`}
                 position={[fromCoords.lat, fromCoords.lon]}
                 eventHandlers={{
                   click: () => onTripClick && onTripClick(trip),
@@ -254,6 +256,7 @@ export default function OpenFreeMapComponent({ trips, onTripClick, selectedTripI
 
               {/* Marker arrivée (B) */}
               <Marker
+                key={`to-${trip.id}`}
                 position={[toCoords.lat, toCoords.lon]}
                 eventHandlers={{
                   click: () => onTripClick && onTripClick(trip),
@@ -268,7 +271,7 @@ export default function OpenFreeMapComponent({ trips, onTripClick, selectedTripI
                   </div>
                 </Popup>
               </Marker>
-            </div>
+            </>
           )
         })}
       </MapContainer>
