@@ -1,5 +1,47 @@
 # 📋 TODO - Depanne Moi
 
+## 🚨 PRIORITÉ HAUTE
+
+### 📸 Système de Photos (Garantie & Transparence)
+- [ ] **Setup Cloudinary** (ou autre service cloud)
+  - Créer compte gratuit
+  - Récupérer credentials (Cloud Name, API Key, Secret)
+  - Ajouter dans .env
+- [ ] **Modifier Prisma Schema**
+  - Créer modèle `TripImage`
+  - Enum `ImageType` (VEHICLE, BEFORE_TRANSPORT, AFTER_TRANSPORT)
+  - Relations avec Trip et User
+- [ ] **Upload de photos - Client (création trajet)**
+  - Component upload drag & drop
+  - Prévisualisation images
+  - Upload vers Cloudinary
+  - 3-5 photos max du véhicule à transporter
+- [ ] **Upload de photos - Transporteur (avant/après)**
+  - Interface "Photos avant transport" (preuve état initial)
+  - Interface "Photos après transport" (preuve état final)
+  - Comparaison avant/après
+- [ ] **API Routes**
+  - POST /api/upload - Upload image
+  - GET /api/trips/[id]/images - Liste photos
+  - POST /api/trips/[id]/images - Ajouter photo
+  - DELETE /api/trips/[id]/images/[id] - Supprimer photo
+- [ ] **Intégration pages**
+  - Form création trajet (upload photos véhicule)
+  - Page détail trajet (voir toutes les photos)
+  - Interface transporteur (upload avant/après)
+  - Galerie photos dans historique
+- [ ] **Code modulaire**
+  - Abstraction StorageProvider
+  - Facile changement de service cloud plus tard
+
+**Avantages :**
+- 🤝 Confiance client/transporteur
+- 📋 Preuve en cas de litige
+- 🛡️ Transparence totale du service
+- ✅ Garantie état du véhicule
+
+---
+
 ## 🗺️ À faire plus tard
 
 ### Carte Interactive
